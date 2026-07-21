@@ -25,6 +25,7 @@ Backend API del proyecto SSIH construido con [NestJS](https://github.com/nestjs/
 - [Node.js](https://nodejs.org/) v18+
 - [pnpm](https://pnpm.io/)
 - [Docker](https://www.docker.com/) (para PostgreSQL)
+- [Docker](https://www.docker.com/) (para PostgreSQL y MinIO local)
 
 ## Levantar el proyecto
 
@@ -51,7 +52,9 @@ docker compose up -d
 Esto levanta PostgreSQL en el puerto `5432` con:
 - Usuario: `admin`
 - Contraseña: `root`
-- Base de datos: `ssih_db`
+- Base de datos: `siih_hospital`
+
+También levanta MinIO en los puertos `9000` (S3) y `9001` (consola) con un bucket local inicial llamado `ssih-hospital-files`.
 
 ### 4. Ejecutar migraciones de Prisma
 
@@ -59,13 +62,41 @@ Esto levanta PostgreSQL en el puerto `5432` con:
 npx prisma migrate dev
 ```
 
-### 5. Iniciar servidor de desarrollo
+### 5. Configurar SQL raw (funciones, triggers, vistas, datos)
+
+La base de datos tiene componentes SQL que Prisma no maneja (funciones, triggers, vistas, restricciones de exclusión). Ejecutar como superusuario:
+
+```bash
+psql -U postgres -d siih_hospital -f prisma/sql/setup.sql
+```
+
+> **Nota**: El usuario de Docker (`admin`) no tiene permisos de superusuario. Conectarse como `postgres` (superusuario del contenedor) o pedir al administrador que ejecute los scripts SQL.
+
+### 6. Iniciar servidor de desarrollo
 
 ```bash
 pnpm run start:dev
 ```
 
 El servidor estará disponible en `http://localhost:3000`.
+
+## Almacenamiento de archivos
+
+El backend ya incluye un módulo de carga de archivos hacia MinIO o Amazon S3.
+
+Variables principales:
+
+- `S3_ENDPOINT` para MinIO local, o vacío en AWS S3
+- `S3_REGION`
+- `S3_ACCESS_KEY_ID`
+- `S3_SECRET_ACCESS_KEY`
+- `S3_BUCKET_NAME`
+- `S3_FORCE_PATH_STYLE=true` para MinIO
+
+Endpoint disponible:
+
+- `POST /almacenamiento/archivos` con `multipart/form-data` y campos `archivo`, `pacienteId`, `subidoPor`, `categoria` y opcional `contenedor`
+- `GET /almacenamiento/archivos/:id/url` para obtener una URL firmada de descarga
 
 ## Swagger (Documentación API)
 
@@ -91,6 +122,7 @@ Desde ahí puedes explorar y probar todos los endpoints de la API.
 | `npx prisma migrate dev` | Crear migración tras cambios en schema |
 | `npx prisma generate` | Regenerar Prisma Client |
 | `npx prisma studio` | Abrir Prisma Studio (UI de BD) |
+| `psql -U postgres -d siih_hospital -f prisma/sql/setup.sql` | Configurar SQL raw completo |
 
 ## Estructura del proyecto
 
@@ -100,7 +132,16 @@ src/
 ├── app.module.ts        # Módulo raíz
 └── prisma/              # (si se crea) Módulo de Prisma
 prisma/
-└── schema.prisma        # Schema de la base de datos
+├── schema.prisma        # Schema de la base de datos (52 tablas, 20+ enums)
+└── sql/                 # SQL raw (funciones, triggers, vistas, datos)
+    ├── 01_extensions.sql
+    ├── 02_roles.sql
+    ├── 03_functions.sql
+    ├── 04_triggers.sql
+    ├── 05_views.sql
+    ├── 06_exclusion_constraints.sql
+    ├── 07_seed_data.sql
+    └── setup.sql        # Orquestador (ejecuta todo en orden)
 prisma.config.ts         # Configuración de Prisma (DATABASE_URL)
 docker-compose.yml       # Contenedor PostgreSQL
 ```
