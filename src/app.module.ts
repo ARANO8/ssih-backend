@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { AuthModule } from './seguridad/auth/auth.module';
 import { PrismaModule } from 'nestjs-prisma';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { RolModule } from './seguridad/rol/rol.module';
@@ -30,6 +32,7 @@ import { PagoModule } from './facturacion/pago/pago.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule.forRoot({
       isGlobal: true,
       prismaServiceOptions: {
@@ -38,6 +41,7 @@ import { PagoModule } from './facturacion/pago/pago.module';
         },
       },
     }),
+    AuthModule,
     RolModule,
     PermisoModule,
     UsuarioModule,
