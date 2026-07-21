@@ -34,6 +34,14 @@ export class OrdenImagenologiaController {
     return this.ordenImagenologiaService.findOne(id);
   }
 
+  @Post(':id/resultados')
+  registrarResultado(
+    @Param('id') id: string,
+    @Body() data: Record<string, unknown>,
+  ) {
+    return this.ordenImagenologiaService.registrarResultado(id, data);
+  }
+
   @Patch(':id')
   update(
     @Param('id') id: string,

@@ -1,0 +1,5 @@
+ALTER TABLE laboratorio.detalle_orden
+  ADD COLUMN IF NOT EXISTS estado TEXT NOT NULL DEFAULT 'PENDIENTE';
+
+ALTER TABLE imagenologia.detalle_orden
+  ADD COLUMN IF NOT EXISTS estado TEXT NOT NULL DEFAULT 'PENDIENTE';
