@@ -33,10 +33,7 @@ export class AlmacenamientoController {
     },
   })
   @UseInterceptors(FileInterceptor('archivo'))
-  subirArchivo(
-    @Body() dto: SubirArchivoDto,
-    @UploadedFile() archivo: any,
-  ) {
+  subirArchivo(@Body() dto: SubirArchivoDto, @UploadedFile() archivo: any) {
     return this.almacenamientoService.subirArchivo(dto, archivo);
   }
 

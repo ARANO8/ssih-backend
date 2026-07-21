@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from 'nestjs-prisma';
 import {
@@ -58,7 +62,10 @@ export class AlmacenamientoService {
     }
 
     const contenedor = dto.contenedor ?? this.bucketName;
-    const claveObjeto = this.buildObjectKey(dto.pacienteId, archivo.originalname);
+    const claveObjeto = this.buildObjectKey(
+      dto.pacienteId,
+      archivo.originalname,
+    );
     const sha256 = createHash('sha256').update(archivo.buffer).digest('hex');
 
     await this.s3Client.send(
