@@ -3,3 +3,5 @@ allowBuilds:
   "@prisma/engines": true
   prisma: true
 strictDepBuilds: false
+verifyDepsBeforeRun: false
+trustLockfile: true
