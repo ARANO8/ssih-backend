@@ -6,12 +6,16 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  app.setGlobalPrefix('ssih/api');
+
   app.enableCors({
     origin: [
       'http://localhost:5173',
       'http://localhost:5174',
       'http://127.0.0.1:5173',
       'http://127.0.0.1:5174',
+      'https://alanarnez-dev.laotra.red',
+      'http://alanarnez-dev.laotra.red',
     ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     credentials: true,
@@ -19,7 +23,6 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
-  // Configuración de la documentación Swagger
   const config = new DocumentBuilder()
     .setTitle('API - Sistema Integrado de Información Hospitalaria')
     .setDescription('Documentación de los endpoints del backend SSIH')
@@ -28,7 +31,7 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('ssih/api/docs', app, document);
 
   await app.listen(process.env.PORT ?? 3000);
 }
