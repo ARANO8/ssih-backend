@@ -1,26 +1,64 @@
-import { Injectable } from '@nestjs/common';
-import { CreateMedicoDto } from './dto/create-medico.dto';
-import { UpdateMedicoDto } from './dto/update-medico.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from 'nestjs-prisma';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class MedicoService {
-  create(createMedicoDto: CreateMedicoDto) {
-    return 'This action adds a new medico';
+  constructor(private prisma: PrismaService) {}
+
+  async create(data: Prisma.medicoUncheckedCreateInput) {
+    return this.prisma.medico.create({
+      data,
+      include: { 
+        empleado: {
+          include: { persona: true } // Traemos empleado y persona al mismo tiempo
+        }
+      }
+    });
   }
 
-  findAll() {
-    return `This action returns all medico`;
+  async findAll() {
+    return this.prisma.medico.findMany({
+      where: { activo: true },
+      include: { 
+        empleado: {
+          include: { persona: true }
+        }
+      }
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} medico`;
+  async findOne(id: string) {
+    const medico = await this.prisma.medico.findUnique({
+      where: { id },
+      include: { 
+        empleado: {
+          include: { persona: true }
+        }
+      }
+    });
+    if (!medico) throw new NotFoundException('Médico no encontrado');
+    return medico;
   }
 
-  update(id: number, updateMedicoDto: UpdateMedicoDto) {
-    return `This action updates a #${id} medico`;
+  async update(id: string, data: Prisma.medicoUpdateInput) {
+    await this.findOne(id);
+    return this.prisma.medico.update({
+      where: { id },
+      data,
+      include: { 
+        empleado: {
+          include: { persona: true }
+        }
+      }
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} medico`;
+  async remove(id: string) {
+    await this.findOne(id);
+    return this.prisma.medico.update({
+      where: { id },
+      data: { activo: false }
+    });
   }
 }

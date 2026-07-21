@@ -1,26 +1,38 @@
-import { Injectable } from '@nestjs/common';
-import { CreateConsultorioDto } from './dto/create-consultorio.dto';
-import { UpdateConsultorioDto } from './dto/update-consultorio.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from 'nestjs-prisma';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ConsultorioService {
-  create(createConsultorioDto: CreateConsultorioDto) {
-    return 'This action adds a new consultorio';
+  constructor(private prisma: PrismaService) {}
+
+  async create(data: Prisma.consultorioCreateInput) {
+    return this.prisma.consultorio.create({ data });
   }
 
-  findAll() {
-    return `This action returns all consultorio`;
+  async findAll() {
+    return this.prisma.consultorio.findMany({
+      where: { activo: true },
+      orderBy: { nombre: 'asc' }
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} consultorio`;
+  async findOne(id: string) {
+    const consultorio = await this.prisma.consultorio.findUnique({ where: { id } });
+    if (!consultorio) throw new NotFoundException('Consultorio no encontrado');
+    return consultorio;
   }
 
-  update(id: number, updateConsultorioDto: UpdateConsultorioDto) {
-    return `This action updates a #${id} consultorio`;
+  async update(id: string, data: Prisma.consultorioUpdateInput) {
+    await this.findOne(id);
+    return this.prisma.consultorio.update({ where: { id }, data });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} consultorio`;
+  async remove(id: string) {
+    await this.findOne(id);
+    return this.prisma.consultorio.update({
+      where: { id },
+      data: { activo: false }
+    });
   }
 }

@@ -1,26 +1,53 @@
-import { Injectable } from '@nestjs/common';
-import { CreatePacienteDto } from './dto/create-paciente.dto';
-import { UpdatePacienteDto } from './dto/update-paciente.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from 'nestjs-prisma';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class PacienteService {
-  create(createPacienteDto: CreatePacienteDto) {
-    return 'This action adds a new paciente';
+  constructor(private prisma: PrismaService) {}
+
+  async create(data: Prisma.pacienteUncheckedCreateInput) {
+    // Verificamos que la persona exista antes de crear el paciente
+    const persona = await this.prisma.persona.findUnique({ where: { id: data.persona_id } });
+    if (!persona) throw new NotFoundException('La persona no existe');
+
+    return this.prisma.paciente.create({
+      data,
+      include: { persona: true } // Retorna el paciente con sus datos personales
+    });
   }
 
-  findAll() {
-    return `This action returns all paciente`;
+  async findAll() {
+    return this.prisma.paciente.findMany({
+      where: { activo: true },
+      include: { persona: true },
+      orderBy: { fecha_registro: 'desc' }
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} paciente`;
+  async findOne(id: string) {
+    const paciente = await this.prisma.paciente.findUnique({
+      where: { id },
+      include: { persona: true }
+    });
+    if (!paciente) throw new NotFoundException(`Paciente ${id} no encontrado`);
+    return paciente;
   }
 
-  update(id: number, updatePacienteDto: UpdatePacienteDto) {
-    return `This action updates a #${id} paciente`;
+  async update(id: string, data: Prisma.pacienteUpdateInput) {
+    await this.findOne(id);
+    return this.prisma.paciente.update({
+      where: { id },
+      data,
+      include: { persona: true }
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} paciente`;
+  async remove(id: string) {
+    await this.findOne(id);
+    return this.prisma.paciente.update({
+      where: { id },
+      data: { activo: false }
+    });
   }
 }

@@ -1,14 +1,15 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { EmpleadoService } from './empleado.service';
-import { CreateEmpleadoDto } from './dto/create-empleado.dto';
-import { UpdateEmpleadoDto } from './dto/update-empleado.dto';
+import { Prisma } from '@prisma/client';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Maestros - Empleados')
 @Controller('empleado')
 export class EmpleadoController {
   constructor(private readonly empleadoService: EmpleadoService) {}
 
   @Post()
-  create(@Body() createEmpleadoDto: CreateEmpleadoDto) {
+  create(@Body() createEmpleadoDto: Prisma.empleadoUncheckedCreateInput) {
     return this.empleadoService.create(createEmpleadoDto);
   }
 
@@ -19,16 +20,16 @@ export class EmpleadoController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.empleadoService.findOne(+id);
+    return this.empleadoService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateEmpleadoDto: UpdateEmpleadoDto) {
-    return this.empleadoService.update(+id, updateEmpleadoDto);
+  update(@Param('id') id: string, @Body() updateEmpleadoDto: Prisma.empleadoUpdateInput) {
+    return this.empleadoService.update(id, updateEmpleadoDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.empleadoService.remove(+id);
+    return this.empleadoService.remove(id);
   }
 }

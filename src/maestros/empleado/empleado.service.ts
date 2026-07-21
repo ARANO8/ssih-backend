@@ -1,26 +1,48 @@
-import { Injectable } from '@nestjs/common';
-import { CreateEmpleadoDto } from './dto/create-empleado.dto';
-import { UpdateEmpleadoDto } from './dto/update-empleado.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from 'nestjs-prisma';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class EmpleadoService {
-  create(createEmpleadoDto: CreateEmpleadoDto) {
-    return 'This action adds a new empleado';
+  constructor(private prisma: PrismaService) {}
+
+  async create(data: Prisma.empleadoUncheckedCreateInput) {
+    return this.prisma.empleado.create({
+      data,
+      include: { persona: true }
+    });
   }
 
-  findAll() {
-    return `This action returns all empleado`;
+  async findAll() {
+    return this.prisma.empleado.findMany({
+      where: { activo: true },
+      include: { persona: true }
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} empleado`;
+  async findOne(id: string) {
+    const empleado = await this.prisma.empleado.findUnique({
+      where: { id },
+      include: { persona: true }
+    });
+    if (!empleado) throw new NotFoundException('Empleado no encontrado');
+    return empleado;
   }
 
-  update(id: number, updateEmpleadoDto: UpdateEmpleadoDto) {
-    return `This action updates a #${id} empleado`;
+  async update(id: string, data: Prisma.empleadoUpdateInput) {
+    await this.findOne(id);
+    return this.prisma.empleado.update({
+      where: { id },
+      data,
+      include: { persona: true }
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} empleado`;
+  async remove(id: string) {
+    await this.findOne(id);
+    return this.prisma.empleado.update({
+      where: { id },
+      data: { activo: false }
+    });
   }
 }
