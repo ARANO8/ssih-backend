@@ -25,6 +25,7 @@ Backend API del proyecto SSIH construido con [NestJS](https://github.com/nestjs/
 - [Node.js](https://nodejs.org/) v18+
 - [pnpm](https://pnpm.io/)
 - [Docker](https://www.docker.com/) (para PostgreSQL)
+- [Docker](https://www.docker.com/) (para PostgreSQL y MinIO local)
 
 ## Levantar el proyecto
 
@@ -53,6 +54,8 @@ Esto levanta PostgreSQL en el puerto `5432` con:
 - Contraseña: `root`
 - Base de datos: `siih_hospital`
 
+También levanta MinIO en los puertos `9000` (S3) y `9001` (consola) con un bucket local inicial llamado `ssih-hospital-files`.
+
 ### 4. Ejecutar migraciones de Prisma
 
 ```bash
@@ -76,6 +79,24 @@ pnpm run start:dev
 ```
 
 El servidor estará disponible en `http://localhost:3000`.
+
+## Almacenamiento de archivos
+
+El backend ya incluye un módulo de carga de archivos hacia MinIO o Amazon S3.
+
+Variables principales:
+
+- `S3_ENDPOINT` para MinIO local, o vacío en AWS S3
+- `S3_REGION`
+- `S3_ACCESS_KEY_ID`
+- `S3_SECRET_ACCESS_KEY`
+- `S3_BUCKET_NAME`
+- `S3_FORCE_PATH_STYLE=true` para MinIO
+
+Endpoint disponible:
+
+- `POST /almacenamiento/archivos` con `multipart/form-data` y campos `archivo`, `pacienteId`, `subidoPor`, `categoria` y opcional `contenedor`
+- `GET /almacenamiento/archivos/:id/url` para obtener una URL firmada de descarga
 
 ## Swagger (Documentación API)
 

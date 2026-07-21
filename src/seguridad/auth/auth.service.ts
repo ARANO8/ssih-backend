@@ -17,7 +17,7 @@ export class AuthService {
   ) {}
 
   async validateUser(nombreUsuario: string, contrasena: string): Promise<any> {
-    const usuario = await this.prisma.usuario.findUnique({
+    const usuario = await (this.prisma as any).usuario.findUnique({
       where: { nombreUsuario },
       include: { usuarioRoles: { include: { rol: true } } },
     });
@@ -53,7 +53,7 @@ export class AuthService {
     } = registerDto;
 
     // Check if user or person already exists
-    const existingUser = await this.prisma.usuario.findUnique({
+    const existingUser = await (this.prisma as any).usuario.findUnique({
       where: { nombreUsuario },
     });
     if (existingUser) {
@@ -64,7 +64,7 @@ export class AuthService {
     const contrasenaHash = await bcrypt.hash(contrasena, salt);
 
     // Create Persona and Usuario in a transaction
-    const newUser = await this.prisma.$transaction(async (tx) => {
+    const newUser = await (this.prisma as any).$transaction(async (tx: any) => {
       const persona = await tx.persona.create({
         data: {
           numeroDocumento,

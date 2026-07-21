@@ -29,6 +29,7 @@ import { OrdenImagenologiaModule } from './imagenologia/orden-imagenologia/orden
 import { ServicioModule } from './facturacion/servicio/servicio.module';
 import { FacturaModule } from './facturacion/factura/factura.module';
 import { PagoModule } from './facturacion/pago/pago.module';
+import { AlmacenamientoModule } from './almacenamiento/almacenamiento.module';
 
 @Module({
   imports: [
@@ -70,6 +71,7 @@ import { PagoModule } from './facturacion/pago/pago.module';
     ServicioModule,
     FacturaModule,
     PagoModule,
+    AlmacenamientoModule,
   ],
   controllers: [],
   providers: [],
