@@ -1,7 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
+// SIIH - Sistema Integrado de Información Hospitalaria
+// Schema Prisma para PostgreSQL
+// 8 esquemas, 52 tablas
 
 generator client {
   provider = "prisma-client-js"
@@ -9,4 +8,1260 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  schemas = ["seguridad", "maestros", "clinica", "laboratorio", "imagenologia", "farmacia", "facturacion", "auditoria"]
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+// Seguridad
+enum EstadoUsuario {
+  PENDIENTE
+  ACTIVO
+  BLOQUEADO
+  INACTIVO
+
+  @@schema("seguridad")
+}
+
+// Maestros
+enum Sexo {
+  FEMENINO
+  MASCULINO
+  OTRO
+  NO_ESPECIFICA
+
+  @@schema("maestros")
+}
+
+enum TipoDocumento {
+  CI
+  PASAPORTE
+  OTRO
+
+  @@schema("maestros")
+}
+
+enum Prioridad {
+  NORMAL
+  URGENTE
+  EMERGENCIA
+
+  @@schema("maestros")
+}
+
+enum EstadoOrden {
+  PENDIENTE
+  EN_PROCESO
+  COMPLETADA
+  VALIDADA
+  CANCELADA
+
+  @@schema("maestros")
+}
+
+// Clinica
+enum TipoEpisodio {
+  CONSULTA_EXTERNA
+  EMERGENCIA
+  HOSPITALIZACION
+
+  @@schema("clinica")
+}
+
+enum EstadoEpisodio {
+  ABIERTO
+  EN_CURSO
+  FINALIZADO
+  CANCELADO
+
+  @@schema("clinica")
+}
+
+enum EstadoCita {
+  PROGRAMADA
+  CONFIRMADA
+  EN_ATENCION
+  ATENDIDA
+  CANCELADA
+  NO_ASISTIO
+
+  @@schema("clinica")
+}
+
+enum EstadoConsulta {
+  ABIERTA
+  CERRADA
+  ANULADA
+
+  @@schema("clinica")
+}
+
+enum TipoAntecedente {
+  ALERGIA
+  ENFERMEDAD_CRONICA
+  CIRUGIA
+  FAMILIAR
+  HABITO
+  OTRO
+
+  @@schema("clinica")
+}
+
+enum TipoDiagnostico {
+  PRINCIPAL
+  SECUNDARIO
+
+  @@schema("clinica")
+}
+
+enum TipoNota {
+  MEDICA
+  ENFERMERIA
+  ADMINISTRATIVA
+
+  @@schema("clinica")
+}
+
+// Laboratorio
+enum EstadoMuestra {
+  PENDIENTE
+  RECOLECTADA
+  RECIBIDA
+  RECHAZADA
+  PROCESADA
+
+  @@schema("laboratorio")
+}
+
+enum EstadoResultadoLab {
+  BORRADOR
+  VALIDADO
+  ANULADO
+
+  @@schema("laboratorio")
+}
+
+// Imagenologia
+enum EstadoResultadoImg {
+  BORRADOR
+  VALIDADO
+  ANULADO
+
+  @@schema("imagenologia")
+}
+
+// Farmacia
+enum EstadoCompra {
+  BORRADOR
+  RECIBIDA
+  ANULADA
+
+  @@schema("farmacia")
+}
+
+enum EstadoReceta {
+  EMITIDA
+  PARCIAL
+  DISPENSADA
+  VENCIDA
+  ANULADA
+
+  @@schema("farmacia")
+}
+
+enum EstadoDispensacion {
+  BORRADOR
+  ENTREGADA
+  ANULADA
+
+  @@schema("farmacia")
+}
+
+enum TipoMovimiento {
+  ENTRADA_COMPRA
+  SALIDA_DISPENSACION
+  AJUSTE_ENTRADA
+  AJUSTE_SALIDA
+  DEVOLUCION
+
+  @@schema("farmacia")
+}
+
+// Facturacion
+enum CategoriaServicio {
+  CONSULTA
+  LABORATORIO
+  IMAGENOLOGIA
+  FARMACIA
+  OTRO
+
+  @@schema("facturacion")
+}
+
+enum EstadoPrestacion {
+  PENDIENTE
+  REALIZADA
+  ANULADA
+
+  @@schema("facturacion")
+}
+
+enum EstadoFactura {
+  BORRADOR
+  EMITIDA
+  PARCIAL
+  PAGADA
+  ANULADA
+
+  @@schema("facturacion")
+}
+
+enum MetodoPago {
+  EFECTIVO
+  TARJETA
+  TRANSFERENCIA
+  QR
+  OTRO
+
+  @@schema("facturacion")
+}
+
+enum OrigenPrestacion {
+  CONSULTA
+  LABORATORIO
+  IMAGENOLOGIA
+  FARMACIA
+  OTRO
+
+  @@schema("facturacion")
+}
+
+// ============================================================
+// SEGURIDAD
+// ============================================================
+
+model Rol {
+  id            Int      @id @default(autoincrement()) @db.SmallInt
+  codigo        String   @unique @db.VarChar(40)
+  nombre        String   @unique @db.VarChar(80)
+  descripcion   String?
+  esSistema     Boolean  @default(false)
+  activo        Boolean  @default(true)
+  creadoEn      DateTime @default(now()) @map("creado_en")
+  modificadoEn  DateTime @default(now()) @map("modificado_en")
+
+  rolPermisos   RolPermiso[]
+  usuarioRoles  UsuarioRol[]
+
+  @@schema("seguridad")
+  @@map("rol")
+}
+
+model Permiso {
+  id          Int      @id @default(autoincrement()) @db.SmallInt
+  codigo      String   @unique @db.VarChar(100)
+  modulo      String   @db.VarChar(40)
+  accion      String   @db.VarChar(40)
+  descripcion String?
+  creadoEn    DateTime @default(now()) @map("creado_en")
+
+  rolPermisos RolPermiso[]
+
+  @@unique([modulo, accion])
+  @@schema("seguridad")
+  @@map("permiso")
+}
+
+model RolPermiso {
+  rolId        Int      @map("rol_id") @db.SmallInt
+  permisoId    Int      @map("permiso_id") @db.SmallInt
+  concedidoEn  DateTime @default(now()) @map("concedido_en")
+
+  rol     Rol     @relation(fields: [rolId], references: [id], onDelete: Cascade)
+  permiso Permiso @relation(fields: [permisoId], references: [id], onDelete: Cascade)
+
+  @@id([rolId, permisoId])
+  @@schema("seguridad")
+  @@map("rol_permiso")
+}
+
+model Usuario {
+  id                  String         @id @default(uuid())
+  personaId           String         @unique @map("persona_id")
+  nombreUsuario       String         @unique @map("nombre_usuario") @db.Citext
+  contrasenaHash      String         @map("contrasena_hash") @db.VarChar(255)
+  estado              EstadoUsuario  @default(PENDIENTE)
+  intentosFallidos    Int            @default(0) @map("intentos_fallidos") @db.SmallInt
+  bloqueadoHasta      DateTime?      @map("bloqueado_hasta")
+  ultimoAccesoEn      DateTime?      @map("ultimo_acceso_en")
+  cambiarContrasena   Boolean        @default(true) @map("cambiar_contrasena")
+  creadoEn            DateTime       @default(now()) @map("creado_en")
+  modificadoEn        DateTime       @default(now()) @map("modificado_en")
+
+  persona             Persona        @relation(fields: [personaId], references: [id])
+  usuarioRoles        UsuarioRol[]
+
+  @@schema("seguridad")
+  @@map("usuario")
+}
+
+model UsuarioRol {
+  usuarioId    String    @map("usuario_id")
+  rolId        Int       @map("rol_id") @db.SmallInt
+  asignadoPor  String?   @map("asignado_por")
+  asignadoEn   DateTime  @default(now()) @map("asignado_en")
+  expiraEn     DateTime? @map("expira_en")
+  activo       Boolean   @default(true)
+
+  usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  rol       Rol     @relation(fields: [rolId], references: [id])
+
+  @@id([usuarioId, rolId])
+  @@schema("seguridad")
+  @@map("usuario_rol")
+}
+
+// ============================================================
+// MAESTROS
+// ============================================================
+
+model Persona {
+  id                String          @id @default(uuid())
+  tipoDocumento     TipoDocumento   @default(CI) @map("tipo_documento")
+  numeroDocumento   String          @map("numero_documento") @db.Citext
+  complemento       String?         @db.VarChar(10)
+  nombres           String          @db.VarChar(100)
+  apellidos         String          @db.VarChar(120)
+  fechaNacimiento   DateTime?       @map("fecha_nacimiento") @db.Date()
+  sexo              Sexo            @default(NO_ESPECIFICA)
+  direccion         String?         @db.VarChar(250)
+  telefono          String?         @db.VarChar(30)
+  correo            String?         @db.Citext
+  activo            Boolean         @default(true)
+  eliminadoEn       DateTime?       @map("eliminado_en")
+  creadoEn          DateTime        @default(now()) @map("creado_en")
+  modificadoEn      DateTime        @default(now()) @map("modificado_en")
+
+  paciente          Paciente?
+  empleado          Empleado?
+  usuario           Usuario?
+
+  @@schema("maestros")
+  @@map("persona")
+}
+
+model Paciente {
+  id                          String    @id @default(uuid())
+  personaId                   String    @unique @map("persona_id")
+  numeroHistoria              Int       @default(autoincrement()) @unique @map("numero_historia")
+  fechaRegistro               DateTime  @default(now()) @map("fecha_registro") @db.Date()
+  grupoSanguineo              String?   @map("grupo_sanguineo") @db.VarChar(3)
+  factorRh                    String?   @map("factor_rh") @db.Char(1)
+  contactoEmergenciaNombre    String?   @map("contacto_emergencia_nombre") @db.VarChar(150)
+  contactoEmergenciaTelefono  String?   @map("contacto_emergencia_telefono") @db.VarChar(30)
+  activo                      Boolean   @default(true)
+  creadoEn                    DateTime  @default(now()) @map("creado_en")
+  modificadoEn                DateTime  @default(now()) @map("modificado_en")
+
+  persona                     Persona   @relation(fields: [personaId], references: [id])
+  historiasClinicas           HistoriaClinica[]
+  episodios                   EpisodioAtencion[]
+  cita                        Cita[]
+  archivosClinicos            ArchivoClinico[]
+  prestacionesServicio        PrestacionServicio[]
+  factura                     Factura[]
+
+  @@schema("maestros")
+  @@map("paciente")
+}
+
+model Empleado {
+  id              String    @id @default(uuid())
+  personaId       String    @unique @map("persona_id")
+  codigoEmpleado  String    @unique @map("codigo_empleado") @db.VarChar(30)
+  cargo           String    @db.VarChar(100)
+  fechaIngreso    DateTime  @default(now()) @map("fecha_ingreso") @db.Date()
+  activo          Boolean   @default(true)
+  creadoEn        DateTime  @default(now()) @map("creado_en")
+  modificadoEn    DateTime  @default(now()) @map("modificado_en")
+
+  persona         Persona   @relation(fields: [personaId], references: [id])
+  medico          Medico?
+
+  @@schema("maestros")
+  @@map("empleado")
+}
+
+model Especialidad {
+  id           Int       @id @default(autoincrement()) @db.SmallInt
+  codigo       String    @unique @db.VarChar(30)
+  nombre       String    @unique @db.VarChar(100)
+  descripcion  String?
+  activo       Boolean   @default(true)
+  creadoEn     DateTime  @default(now()) @map("creado_en")
+  modificadoEn DateTime  @default(now()) @map("modificado_en")
+
+  medicoEspecialidades MedicoEspecialidad[]
+  citas                Cita[]
+
+  @@schema("maestros")
+  @@map("especialidad")
+}
+
+model Medico {
+  id                   String    @id @default(uuid())
+  empleadoId           String    @unique @map("empleado_id")
+  matriculaProfesional String    @unique @map("matricula_profesional") @db.VarChar(40)
+  activo               Boolean   @default(true)
+  creadoEn             DateTime  @default(now()) @map("creado_en")
+  modificadoEn         DateTime  @default(now()) @map("modificado_en")
+
+  empleado             Empleado  @relation(fields: [empleadoId], references: [id])
+  medicoEspecialidades MedicoEspecialidad[]
+  horarios             HorarioMedico[]
+  citas                Cita[]
+  consultas            Consulta[]
+  ordenesLaboratorio   OrdenLaboratorio[]
+  ordenesImagenologia  OrdenImagenologia[]
+  recetas              Receta[]
+
+  @@schema("maestros")
+  @@map("medico")
+}
+
+model MedicoEspecialidad {
+  medicoId        String   @map("medico_id")
+  especialidadId  Int      @map("especialidad_id") @db.SmallInt
+  esPrincipal     Boolean  @default(false) @map("es_principal")
+  creadoEn        DateTime @default(now()) @map("creado_en")
+
+  medico       Medico       @relation(fields: [medicoId], references: [id], onDelete: Cascade)
+  especialidad Especialidad @relation(fields: [especialidadId], references: [id])
+
+  @@id([medicoId, especialidadId])
+  @@schema("maestros")
+  @@map("medico_especialidad")
+}
+
+model Consultorio {
+  id          String    @id @default(uuid())
+  codigo      String    @unique @db.VarChar(30)
+  nombre      String    @db.VarChar(100)
+  piso        String?   @db.VarChar(30)
+  ubicacion   String?   @db.VarChar(200)
+  activo      Boolean   @default(true)
+  creadoEn    DateTime  @default(now()) @map("creado_en")
+  modificadoEn DateTime @default(now()) @map("modificado_en")
+
+  horarios     HorarioMedico[]
+  citas        Cita[]
+
+  @@schema("maestros")
+  @@map("consultorio")
+}
+
+model HorarioMedico {
+  id              String    @id @default(uuid())
+  medicoId        String    @map("medico_id")
+  consultorioId   String?   @map("consultorio_id")
+  diaSemana       Int       @map("dia_semana") @db.SmallInt
+  horaInicio      DateTime  @map("hora_inicio") @db.Time()
+  horaFin         DateTime  @map("hora_fin") @db.Time()
+  vigenteDesde    DateTime  @default(now()) @map("vigente_desde") @db.Date()
+  vigenteHasta    DateTime? @map("vigente_hasta") @db.Date()
+  activo          Boolean   @default(true)
+  creadoEn        DateTime  @default(now()) @map("creado_en")
+  modificadoEn    DateTime  @default(now()) @map("modificado_en")
+
+  medico      Medico       @relation(fields: [medicoId], references: [id])
+  consultorio Consultorio? @relation(fields: [consultorioId], references: [id])
+
+  @@schema("maestros")
+  @@map("horario_medico")
+}
+
+// ============================================================
+// CLINICA
+// ============================================================
+
+model HistoriaClinica {
+  id                    String    @id @default(uuid())
+  pacienteId            String    @unique @map("paciente_id")
+  fechaApertura         DateTime  @default(now()) @map("fecha_apertura") @db.Date()
+  antecedentesResumen   String?   @map("antecedentes_resumen")
+  observaciones         String?
+  activa                Boolean   @default(true)
+  creadoEn              DateTime  @default(now()) @map("creado_en")
+  modificadoEn          DateTime  @default(now()) @map("modificado_en")
+
+  paciente              Paciente  @relation(fields: [pacienteId], references: [id])
+  antecedentes          AntecedenteClinico[]
+  consultas             Consulta[]
+
+  @@schema("clinica")
+  @@map("historia_clinica")
+}
+
+model AntecedenteClinico {
+  id                    String            @id @default(uuid())
+  historiaClinicaId     String            @map("historia_clinica_id")
+  tipo                  TipoAntecedente
+  descripcion           String
+  fechaAproximada       DateTime?         @map("fecha_aproximada") @db.Date()
+  activo                Boolean           @default(true)
+  registradoPor         String?           @map("registrado_por")
+  creadoEn              DateTime          @default(now()) @map("creado_en")
+  modificadoEn          DateTime          @default(now()) @map("modificado_en")
+
+  historiaClinica       HistoriaClinica   @relation(fields: [historiaClinicaId], references: [id], onDelete: Cascade)
+
+  @@schema("clinica")
+  @@map("antecedente_clinico")
+}
+
+model EpisodioAtencion {
+  id              String            @id @default(uuid())
+  pacienteId      String            @map("paciente_id")
+  tipo            TipoEpisodio
+  estado          EstadoEpisodio    @default(ABIERTO)
+  fechaInicio     DateTime          @default(now()) @map("fecha_inicio")
+  fechaFin        DateTime?         @map("fecha_fin")
+  motivo          String
+  prioridad       Prioridad         @default(NORMAL)
+  creadoPor       String?           @map("creado_por")
+  creadoEn        DateTime          @default(now()) @map("creado_en")
+  modificadoEn    DateTime          @default(now()) @map("modificado_en")
+
+  paciente        Paciente          @relation(fields: [pacienteId], references: [id])
+  cita            Cita?
+  consultas       Consulta[]
+  notasEvolucion  NotaEvolucion[]
+  prestacionesServicio PrestacionServicio[]
+
+  @@schema("clinica")
+  @@map("episodio_atencion")
+}
+
+model Cita {
+  id                  String          @id @default(uuid())
+  pacienteId          String          @map("paciente_id")
+  medicoId            String          @map("medico_id")
+  especialidadId      Int             @map("especialidad_id") @db.SmallInt
+  consultorioId       String?         @map("consultorio_id")
+  episodioId          String?         @unique @map("episodio_id")
+  fechaHoraInicio     DateTime        @map("fecha_hora_inicio")
+  fechaHoraFin        DateTime        @map("fecha_hora_fin")
+  estado              EstadoCita      @default(PROGRAMADA)
+  motivo              String          @db.VarChar(500)
+  observaciones       String?
+  creadaPor           String?         @map("creada_por")
+  canceladaPor        String?         @map("cancelada_por")
+  canceladaEn         DateTime?       @map("cancelada_en")
+  motivoCancelacion   String?         @map("motivo_cancelacion")
+  creadoEn            DateTime        @default(now()) @map("creado_en")
+  modificadoEn        DateTime        @default(now()) @map("modificado_en")
+
+  paciente            Paciente        @relation(fields: [pacienteId], references: [id])
+  medico              Medico          @relation(fields: [medicoId], references: [id])
+  especialidad        Especialidad    @relation(fields: [especialidadId], references: [id])
+  consultorio         Consultorio?    @relation(fields: [consultorioId], references: [id])
+  episodio            EpisodioAtencion? @relation(fields: [episodioId], references: [id])
+
+  consulta            Consulta?
+
+  @@schema("clinica")
+  @@map("cita")
+}
+
+model Consulta {
+  id                      String          @id @default(uuid())
+  episodioId              String          @map("episodio_id")
+  citaId                  String?         @unique @map("cita_id")
+  historiaClinicaId       String          @map("historia_clinica_id")
+  medicoId                String          @map("medico_id")
+  fechaInicio             DateTime        @default(now()) @map("fecha_inicio")
+  fechaFin                DateTime?       @map("fecha_fin")
+  estado                  EstadoConsulta  @default(ABIERTA)
+  motivoConsulta          String          @map("motivo_consulta")
+  exploracionFisica       String?         @map("exploracion_fisica")
+  impresionDiagnostica    String?         @map("impresion_diagnostica")
+  planTratamiento         String?         @map("plan_tratamiento")
+  observaciones           String?
+  creadoEn                DateTime        @default(now()) @map("creado_en")
+  modificadoEn            DateTime        @default(now()) @map("modificado_en")
+
+  episodio                EpisodioAtencion @relation(fields: [episodioId], references: [id])
+  cita                    Cita?           @relation(fields: [citaId], references: [id])
+  historiaClinica         HistoriaClinica @relation(fields: [historiaClinicaId], references: [id])
+  medico                  Medico          @relation(fields: [medicoId], references: [id])
+  signosVitales           SignoVital[]
+  diagnosticoConsulta     ConsultaDiagnostico[]
+  notasEvolucion          NotaEvolucion[]
+  consultaArchivos        ConsultaArchivo[]
+  ordenesLaboratorio      OrdenLaboratorio[]
+  ordenesImagenologia     OrdenImagenologia[]
+  recetas                 Receta[]
+
+  @@schema("clinica")
+  @@map("consulta")
+}
+
+model SignoVital {
+  id                      String    @id @default(uuid())
+  consultaId              String    @map("consulta_id")
+  registradoPor           String    @map("registrado_por")
+  registradoEn            DateTime  @default(now()) @map("registrado_en")
+  presionSistolica        Int?      @map("presion_sistolica") @db.SmallInt
+  presionDiastolica       Int?      @map("presion_diastolica") @db.SmallInt
+  frecuenciaCardiaca      Int?      @map("frecuencia_cardiaca") @db.SmallInt
+  frecuenciaRespiratoria  Int?      @map("frecuencia_respiratoria") @db.SmallInt
+  temperatura             Decimal?  @db.Decimal(4, 1)
+  saturacionOxigeno       Decimal?  @map("saturacion_oxigeno") @db.Decimal(5, 2)
+  pesoKg                  Decimal?  @map("peso_kg") @db.Decimal(6, 2)
+  tallaCm                 Decimal?  @map("talla_cm") @db.Decimal(6, 2)
+  observaciones           String?
+
+  consulta                Consulta  @relation(fields: [consultaId], references: [id], onDelete: Cascade)
+
+  @@schema("clinica")
+  @@map("signo_vital")
+}
+
+model CatalogoDiagnostico {
+  id            String    @id @default(uuid())
+  codigo        String    @unique @db.VarChar(20)
+  nombre        String    @db.VarChar(250)
+  descripcion   String?
+  activo        Boolean   @default(true)
+  creadoEn      DateTime  @default(now()) @map("creado_en")
+  modificadoEn  DateTime  @default(now()) @map("modificado_en")
+
+  consultaDiagnostico ConsultaDiagnostico[]
+
+  @@schema("clinica")
+  @@map("catalogo_diagnostico")
+}
+
+model ConsultaDiagnostico {
+  consultaId      String            @map("consulta_id")
+  diagnosticoId   String            @map("diagnostico_id")
+  tipo            TipoDiagnostico   @default(SECUNDARIO)
+  observaciones   String?
+  creadoEn        DateTime          @default(now()) @map("creado_en")
+
+  consulta        Consulta          @relation(fields: [consultaId], references: [id], onDelete: Cascade)
+  diagnostico     CatalogoDiagnostico @relation(fields: [diagnosticoId], references: [id])
+
+  @@id([consultaId, diagnosticoId])
+  @@schema("clinica")
+  @@map("consulta_diagnostico")
+}
+
+model NotaEvolucion {
+  id                String    @id @default(uuid())
+  episodioId        String    @map("episodio_id")
+  consultaId        String?   @map("consulta_id")
+  tipo              TipoNota
+  contenido         String
+  autorUsuarioId    String    @map("autor_usuario_id")
+  registradoEn      DateTime  @default(now()) @map("registrado_en")
+
+  episodio          EpisodioAtencion @relation(fields: [episodioId], references: [id], onDelete: Cascade)
+  consulta          Consulta? @relation(fields: [consultaId], references: [id])
+
+  @@schema("clinica")
+  @@map("nota_evolucion")
+}
+
+model ArchivoClinico {
+  id                        String    @id @default(uuid())
+  pacienteId                String    @map("paciente_id")
+  subidoPor                 String    @map("subido_por")
+  proveedorAlmacenamiento   String    @default("MINIO") @map("proveedor_almacenamiento") @db.VarChar(20)
+  contenedor                String    @db.VarChar(100)
+  claveObjeto               String    @unique @map("clave_objeto") @db.VarChar(500)
+  nombreOriginal            String    @map("nombre_original") @db.VarChar(255)
+  tipoMime                  String    @map("tipo_mime") @db.VarChar(120)
+  tamanoBytes               BigInt    @map("tamano_bytes")
+  hashSha256                String?   @db.VarChar(64)
+  categoria                 String    @db.VarChar(40)
+  creadoEn                  DateTime  @default(now()) @map("creado_en")
+
+  paciente                  Paciente  @relation(fields: [pacienteId], references: [id])
+  consultaArchivos          ConsultaArchivo[]
+  resultadoArchivosLab      ResultadoArchivoLab[]
+  resultadoArchivosImg      ResultadoArchivoImg[]
+
+  @@schema("clinica")
+  @@map("archivo_clinico")
+}
+
+model ConsultaArchivo {
+  consultaId  String @map("consulta_id")
+  archivoId   String @map("archivo_id")
+
+  consulta  Consulta        @relation(fields: [consultaId], references: [id], onDelete: Cascade)
+  archivo   ArchivoClinico  @relation(fields: [archivoId], references: [id])
+
+  @@id([consultaId, archivoId])
+  @@schema("clinica")
+  @@map("consulta_archivo")
+}
+
+// ============================================================
+// LABORATORIO
+// ============================================================
+
+model TipoExamen {
+  id                            String    @id @default(uuid())
+  codigo                        String    @unique @db.VarChar(30)
+  nombre                        String    @unique @db.VarChar(150)
+  tipoMuestra                   String?   @map("tipo_muestra") @db.VarChar(80)
+  unidadPredeterminada          String?   @map("unidad_predeterminada") @db.VarChar(30)
+  rangoReferenciaPredeterminado String?   @map("rango_referencia_predeterminado") @db.VarChar(150)
+  precioReferencia              Decimal   @default(0) @map("precio_referencia") @db.Decimal(12, 2)
+  activo                        Boolean   @default(true)
+  creadoEn                      DateTime  @default(now()) @map("creado_en")
+  modificadoEn                  DateTime  @default(now()) @map("modificado_en")
+
+  detalleOrden                  DetalleOrdenLab[]
+
+  @@schema("laboratorio")
+  @@map("tipo_examen")
+}
+
+model OrdenLaboratorio {
+  id                      String       @id @default(uuid())
+  numeroOrden             Int          @default(autoincrement()) @unique @map("numero_orden")
+  consultaId              String       @map("consulta_id")
+  solicitadoPorMedicoId   String       @map("solicitado_por_medico_id")
+  prioridad               Prioridad    @default(NORMAL)
+  estado                  EstadoOrden  @default(PENDIENTE)
+  indicaciones            String?
+  solicitadoEn            DateTime     @default(now()) @map("solicitado_en")
+  canceladoEn             DateTime?    @map("cancelado_en")
+  canceladoPor            String?      @map("cancelado_por")
+  motivoCancelacion       String?      @map("motivo_cancelacion")
+  modificadoEn            DateTime     @default(now()) @map("modificado_en")
+
+  consulta                Consulta     @relation(fields: [consultaId], references: [id])
+  medico                  Medico       @relation(fields: [solicitadoPorMedicoId], references: [id])
+  detalles                DetalleOrdenLab[]
+
+  @@schema("laboratorio")
+  @@map("orden_laboratorio")
+}
+
+model DetalleOrdenLab {
+  id              String       @id @default(uuid())
+  ordenId         String       @map("orden_id")
+  tipoExamenId    String       @map("tipo_examen_id")
+  estado          EstadoOrden  @default(PENDIENTE)
+  indicaciones    String?
+  creadoEn        DateTime     @default(now()) @map("creado_en")
+  modificadoEn    DateTime     @default(now()) @map("modificado_en")
+
+  orden           OrdenLaboratorio @relation(fields: [ordenId], references: [id], onDelete: Cascade)
+  tipoExamen      TipoExamen    @relation(fields: [tipoExamenId], references: [id])
+  muestra         Muestra?
+  resultado       ResultadoLab?
+
+  @@unique([ordenId, tipoExamenId])
+  @@schema("laboratorio")
+  @@map("detalle_orden")
+}
+
+model Muestra {
+  id                  String         @id @default(uuid())
+  detalleOrdenId      String         @unique @map("detalle_orden_id")
+  codigoMuestra       String         @unique @map("codigo_muestra") @db.VarChar(50)
+  tipoMuestra         String         @map("tipo_muestra") @db.VarChar(80)
+  estado              EstadoMuestra  @default(PENDIENTE)
+  recolectadaEn       DateTime?      @map("recolectada_en")
+  recolectadaPor      String?        @map("recolectada_por")
+  recibidaEn          DateTime?      @map("recibida_en")
+  recibidaPor         String?        @map("recibida_por")
+  motivoRechazo       String?        @map("motivo_rechazo")
+  creadoEn            DateTime       @default(now()) @map("creado_en")
+  modificadoEn        DateTime       @default(now()) @map("modificado_en")
+
+  detalleOrden        DetalleOrdenLab @relation(fields: [detalleOrdenId], references: [id], onDelete: Cascade)
+
+  @@schema("laboratorio")
+  @@map("muestra")
+}
+
+model ResultadoLab {
+  id                  String            @id @default(uuid())
+  detalleOrdenId      String            @unique @map("detalle_orden_id")
+  estado              EstadoResultadoLab @default(BORRADOR)
+  resultadoTexto      String?           @map("resultado_texto")
+  valorNumerico       Decimal?          @map("valor_numerico") @db.Decimal(18, 6)
+  unidad              String?           @db.VarChar(30)
+  rangoReferencia     String?           @map("rango_referencia") @db.VarChar(150)
+  esAnormal           Boolean?          @map("es_anormal")
+  registradoPor       String            @map("registrado_por")
+  registradoEn        DateTime          @default(now()) @map("registrado_en")
+  validadoPor         String?           @map("validado_por")
+  validadoEn          DateTime?         @map("validado_en")
+  observaciones       String?
+  modificadoEn        DateTime          @default(now()) @map("modificado_en")
+
+  detalleOrden        DetalleOrdenLab   @relation(fields: [detalleOrdenId], references: [id], onDelete: Cascade)
+  archivos            ResultadoArchivoLab[]
+
+  @@schema("laboratorio")
+  @@map("resultado")
+}
+
+model ResultadoArchivoLab {
+  resultadoId  String @map("resultado_id")
+  archivoId    String @map("archivo_id")
+
+  resultado   ResultadoLab    @relation(fields: [resultadoId], references: [id], onDelete: Cascade)
+  archivo     ArchivoClinico  @relation(fields: [archivoId], references: [id])
+
+  @@id([resultadoId, archivoId])
+  @@schema("laboratorio")
+  @@map("resultado_archivo")
+}
+
+// ============================================================
+// IMAGENOLOGIA
+// ============================================================
+
+model TipoEstudio {
+  id                String    @id @default(uuid())
+  codigo            String    @unique @db.VarChar(30)
+  nombre            String    @unique @db.VarChar(150)
+  descripcion       String?
+  precioReferencia  Decimal   @default(0) @map("precio_referencia") @db.Decimal(12, 2)
+  activo            Boolean   @default(true)
+  creadoEn          DateTime  @default(now()) @map("creado_en")
+  modificadoEn      DateTime  @default(now()) @map("modificado_en")
+
+  detalleOrden      DetalleOrdenImg[]
+
+  @@schema("imagenologia")
+  @@map("tipo_estudio")
+}
+
+model OrdenImagenologia {
+  id                      String       @id @default(uuid())
+  numeroOrden             Int          @default(autoincrement()) @unique @map("numero_orden")
+  consultaId              String       @map("consulta_id")
+  solicitadoPorMedicoId   String       @map("solicitado_por_medico_id")
+  prioridad               Prioridad    @default(NORMAL)
+  estado                  EstadoOrden  @default(PENDIENTE)
+  indicaciones            String?
+  solicitadoEn            DateTime     @default(now()) @map("solicitado_en")
+  modificadoEn            DateTime     @default(now()) @map("modificado_en")
+
+  consulta                Consulta     @relation(fields: [consultaId], references: [id])
+  medico                  Medico       @relation(fields: [solicitadoPorMedicoId], references: [id])
+  detalles                DetalleOrdenImg[]
+
+  @@schema("imagenologia")
+  @@map("orden_imagenologia")
+}
+
+model DetalleOrdenImg {
+  id              String       @id @default(uuid())
+  ordenId         String       @map("orden_id")
+  tipoEstudioId   String       @map("tipo_estudio_id")
+  estado          EstadoOrden  @default(PENDIENTE)
+  regionAnatomica String?      @map("region_anatomica") @db.VarChar(120)
+  observaciones   String?
+  creadoEn        DateTime     @default(now()) @map("creado_en")
+  modificadoEn    DateTime     @default(now()) @map("modificado_en")
+
+  orden           OrdenImagenologia @relation(fields: [ordenId], references: [id], onDelete: Cascade)
+  tipoEstudio     TipoEstudio  @relation(fields: [tipoEstudioId], references: [id])
+  resultado       ResultadoImg?
+
+  @@unique([ordenId, tipoEstudioId, regionAnatomica])
+  @@schema("imagenologia")
+  @@map("detalle_orden")
+}
+
+model ResultadoImg {
+  id                  String            @id @default(uuid())
+  detalleOrdenId      String            @unique @map("detalle_orden_id")
+  estado              EstadoResultadoImg @default(BORRADOR)
+  informe             String
+  conclusion          String?
+  registradoPor       String            @map("registrado_por")
+  registradoEn        DateTime          @default(now()) @map("registrado_en")
+  validadoPor         String?           @map("validado_por")
+  validadoEn          DateTime?         @map("validado_en")
+  modificadoEn        DateTime          @default(now()) @map("modificado_en")
+
+  detalleOrden        DetalleOrdenImg   @relation(fields: [detalleOrdenId], references: [id], onDelete: Cascade)
+  archivos            ResultadoArchivoImg[]
+
+  @@schema("imagenologia")
+  @@map("resultado")
+}
+
+model ResultadoArchivoImg {
+  resultadoId  String @map("resultado_id")
+  archivoId    String @map("archivo_id")
+
+  resultado   ResultadoImg    @relation(fields: [resultadoId], references: [id], onDelete: Cascade)
+  archivo     ArchivoClinico  @relation(fields: [archivoId], references: [id])
+
+  @@id([resultadoId, archivoId])
+  @@schema("imagenologia")
+  @@map("resultado_archivo")
+}
+
+// ============================================================
+// FARMACIA
+// ============================================================
+
+model Medicamento {
+  id                 String    @id @default(uuid())
+  codigo             String    @unique @db.VarChar(40)
+  nombreGenerico     String    @map("nombre_generico") @db.VarChar(150)
+  nombreComercial    String?   @map("nombre_comercial") @db.VarChar(150)
+  formaFarmaceutica  String    @map("forma_farmaceutica") @db.VarChar(80)
+  concentracion      String?   @db.VarChar(80)
+  unidadMedida       String    @map("unidad_medida") @db.VarChar(30)
+  requiereReceta     Boolean   @default(true) @map("requiere_receta")
+  controlado         Boolean   @default(false)
+  stockMinimo        Decimal   @default(0) @map("stock_minimo") @db.Decimal(12, 3)
+  activo             Boolean   @default(true)
+  creadoEn           DateTime  @default(now()) @map("creado_en")
+  modificadoEn       DateTime  @default(now()) @map("modificado_en")
+
+  lotes              LoteMedicamento[]
+  detalleRecetas     DetalleReceta[]
+
+  @@schema("farmacia")
+  @@map("medicamento")
+}
+
+model Proveedor {
+  id              String    @id @default(uuid())
+  nit             String?   @unique @db.VarChar(30)
+  razonSocial     String    @map("razon_social") @db.VarChar(180)
+  contactoNombre  String?   @map("contacto_nombre") @db.VarChar(150)
+  telefono        String?   @db.VarChar(30)
+  correo          String?   @db.Citext
+  direccion       String?   @db.VarChar(250)
+  activo          Boolean   @default(true)
+  creadoEn        DateTime  @default(now()) @map("creado_en")
+  modificadoEn    DateTime  @default(now()) @map("modificado_en")
+
+  lotes           LoteMedicamento[]
+  compras         Compra[]
+
+  @@schema("farmacia")
+  @@map("proveedor")
+}
+
+model LoteMedicamento {
+  id                String    @id @default(uuid())
+  medicamentoId     String    @map("medicamento_id")
+  proveedorId       String?   @map("proveedor_id")
+  codigoLote        String    @map("codigo_lote") @db.VarChar(60)
+  fechaVencimiento  DateTime  @map("fecha_vencimiento") @db.Date()
+  costoUnitario     Decimal   @default(0) @map("costo_unitario") @db.Decimal(12, 4)
+  stockActual       Decimal   @default(0) @map("stock_actual") @db.Decimal(12, 3)
+  activo            Boolean   @default(true)
+  creadoEn          DateTime  @default(now()) @map("creado_en")
+  modificadoEn      DateTime  @default(now()) @map("modificado_en")
+
+  medicamento       Medicamento @relation(fields: [medicamentoId], references: [id])
+  proveedor         Proveedor?  @relation(fields: [proveedorId], references: [id])
+  detalleCompras    DetalleCompra[]
+  detalleDispensacion DetalleDispensacion[]
+  detalleMovimientos  DetalleMovimiento[]
+
+  @@unique([medicamentoId, codigoLote])
+  @@schema("farmacia")
+  @@map("lote_medicamento")
+}
+
+model Compra {
+  id                String        @id @default(uuid())
+  proveedorId       String        @map("proveedor_id")
+  numeroDocumento   String        @map("numero_documento") @db.VarChar(60)
+  fechaCompra       DateTime      @default(now()) @map("fecha_compra") @db.Date()
+  estado            EstadoCompra  @default(BORRADOR)
+  subtotal          Decimal       @default(0) @db.Decimal(14, 2)
+  descuento         Decimal       @default(0) @db.Decimal(14, 2)
+  total             Decimal       @default(0) @db.Decimal(14, 2)
+  registradaPor     String        @map("registrada_por")
+  observaciones     String?
+  creadoEn          DateTime      @default(now()) @map("creado_en")
+  modificadoEn      DateTime      @default(now()) @map("modificado_en")
+
+  proveedor         Proveedor     @relation(fields: [proveedorId], references: [id])
+  detalles          DetalleCompra[]
+  movimientos       MovimientoInventario[]
+
+  @@unique([proveedorId, numeroDocumento])
+  @@schema("farmacia")
+  @@map("compra")
+}
+
+model DetalleCompra {
+  id              String    @id @default(uuid())
+  compraId        String    @map("compra_id")
+  loteId          String    @map("lote_id")
+  cantidad        Decimal   @db.Decimal(12, 3)
+  costoUnitario   Decimal   @map("costo_unitario") @db.Decimal(12, 4)
+  creadoEn        DateTime  @default(now()) @map("creado_en")
+
+  compra          Compra            @relation(fields: [compraId], references: [id], onDelete: Cascade)
+  lote            LoteMedicamento   @relation(fields: [loteId], references: [id])
+
+  @@unique([compraId, loteId])
+  @@schema("farmacia")
+  @@map("detalle_compra")
+}
+
+model Receta {
+  id              String        @id @default(uuid())
+  numeroReceta    Int           @default(autoincrement()) @unique @map("numero_receta")
+  consultaId      String        @map("consulta_id")
+  medicoId        String        @map("medico_id")
+  estado          EstadoReceta  @default(EMITIDA)
+  emitidaEn       DateTime      @default(now()) @map("emitida_en")
+  validaHasta     DateTime      @map("valida_hasta") @db.Date()
+  observaciones   String?
+  creadoEn        DateTime      @default(now()) @map("creado_en")
+  modificadoEn    DateTime      @default(now()) @map("modificado_en")
+
+  consulta        Consulta      @relation(fields: [consultaId], references: [id])
+  medico          Medico        @relation(fields: [medicoId], references: [id])
+  detalles        DetalleReceta[]
+  dispensaciones  Dispensacion[]
+
+  @@schema("farmacia")
+  @@map("receta")
+}
+
+model DetalleReceta {
+  id                  String    @id @default(uuid())
+  recetaId            String    @map("receta_id")
+  medicamentoId       String    @map("medicamento_id")
+  dosis               String    @db.VarChar(100)
+  viaAdministracion   String    @map("via_administracion") @db.VarChar(80)
+  frecuencia          String    @db.VarChar(100)
+  duracionDias        Int?      @map("duracion_dias") @db.SmallInt
+  cantidadPrescrita   Decimal   @map("cantidad_prescrita") @db.Decimal(12, 3)
+  indicaciones        String?
+  creadoEn            DateTime  @default(now()) @map("creado_en")
+
+  receta              Receta             @relation(fields: [recetaId], references: [id], onDelete: Cascade)
+  medicamento         Medicamento        @relation(fields: [medicamentoId], references: [id])
+  detalleDispensacion DetalleDispensacion[]
+
+  @@unique([recetaId, medicamentoId])
+  @@schema("farmacia")
+  @@map("detalle_receta")
+}
+
+model Dispensacion {
+  id                String              @id @default(uuid())
+  recetaId          String              @map("receta_id")
+  estado            EstadoDispensacion  @default(BORRADOR)
+  dispensadaPor     String              @map("dispensada_por")
+  dispensadaEn      DateTime?           @map("dispensada_en")
+  observaciones     String?
+  creadoEn          DateTime            @default(now()) @map("creado_en")
+  modificadoEn      DateTime            @default(now()) @map("modificado_en")
+
+  receta            Receta              @relation(fields: [recetaId], references: [id])
+  detalles          DetalleDispensacion[]
+  movimientos       MovimientoInventario[]
+
+  @@schema("farmacia")
+  @@map("dispensacion")
+}
+
+model DetalleDispensacion {
+  id                String          @id @default(uuid())
+  dispensacionId    String          @map("dispensacion_id")
+  detalleRecetaId   String          @map("detalle_receta_id")
+  loteId            String          @map("lote_id")
+  cantidad          Decimal         @db.Decimal(12, 3)
+  creadoEn          DateTime        @default(now()) @map("creado_en")
+
+  dispensacion      Dispensacion    @relation(fields: [dispensacionId], references: [id], onDelete: Cascade)
+  detalleReceta     DetalleReceta   @relation(fields: [detalleRecetaId], references: [id])
+  lote              LoteMedicamento @relation(fields: [loteId], references: [id])
+
+  @@unique([dispensacionId, detalleRecetaId, loteId])
+  @@schema("farmacia")
+  @@map("detalle_dispensacion")
+}
+
+model MovimientoInventario {
+  id                String          @id @default(uuid())
+  tipo              TipoMovimiento
+  fechaMovimiento   DateTime        @default(now()) @map("fecha_movimiento")
+  usuarioId         String          @map("usuario_id")
+  compraId          String?         @map("compra_id")
+  dispensacionId    String?         @map("dispensacion_id")
+  motivo            String?
+  creadoEn          DateTime        @default(now()) @map("creado_en")
+
+  compra            Compra?         @relation(fields: [compraId], references: [id])
+  dispensacion      Dispensacion?   @relation(fields: [dispensacionId], references: [id])
+  detalles          DetalleMovimiento[]
+
+  @@schema("farmacia")
+  @@map("movimiento_inventario")
+}
+
+model DetalleMovimiento {
+  id                String          @id @default(uuid())
+  movimientoId      String          @map("movimiento_id")
+  loteId            String          @map("lote_id")
+  cantidad          Decimal         @db.Decimal(12, 3)
+  costoUnitario     Decimal?        @map("costo_unitario") @db.Decimal(12, 4)
+  creadoEn          DateTime        @default(now()) @map("creado_en")
+
+  movimiento        MovimientoInventario @relation(fields: [movimientoId], references: [id])
+  lote              LoteMedicamento @relation(fields: [loteId], references: [id])
+
+  @@unique([movimientoId, loteId])
+  @@schema("farmacia")
+  @@map("detalle_movimiento")
+}
+
+// ============================================================
+// FACTURACION
+// ============================================================
+
+model Servicio {
+  id              String            @id @default(uuid())
+  codigo          String            @unique @db.VarChar(40)
+  nombre          String            @db.VarChar(180)
+  categoria       CategoriaServicio
+  precioBase      Decimal           @default(0) @map("precio_base") @db.Decimal(12, 2)
+  activo          Boolean           @default(true)
+  creadoEn        DateTime          @default(now()) @map("creado_en")
+  modificadoEn    DateTime          @default(now()) @map("modificado_en")
+
+  prestacionesServicio PrestacionServicio[]
+
+  @@schema("facturacion")
+  @@map("servicio")
+}
+
+model PrestacionServicio {
+  id                      String            @id @default(uuid())
+  servicioId              String            @map("servicio_id")
+  pacienteId              String            @map("paciente_id")
+  episodioId              String?           @map("episodio_id")
+  origen                  OrigenPrestacion
+  consultaId              String?           @map("consulta_id")
+  detalleLaboratorioId    String?           @map("detalle_laboratorio_id")
+  detalleImagenologiaId   String?           @map("detalle_imagenologia_id")
+  dispensacionId          String?           @map("dispensacion_id")
+  descripcion             String            @db.VarChar(250)
+  fechaPrestacion         DateTime          @default(now()) @map("fecha_prestacion")
+  cantidad                Decimal           @default(1) @db.Decimal(12, 3)
+  precioUnitario          Decimal           @map("precio_unitario") @db.Decimal(12, 2)
+  estado                  EstadoPrestacion  @default(REALIZADA)
+  registradaPor           String            @map("registrada_por")
+  creadoEn                DateTime          @default(now()) @map("creado_en")
+  modificadoEn            DateTime          @default(now()) @map("modificado_en")
+
+  servicio                Servicio          @relation(fields: [servicioId], references: [id])
+  paciente                Paciente          @relation(fields: [pacienteId], references: [id])
+  episodio                EpisodioAtencion? @relation(fields: [episodioId], references: [id])
+  detalleFactura          DetalleFactura?
+
+  @@schema("facturacion")
+  @@map("prestacion_servicio")
+}
+
+model Factura {
+  id              String        @id @default(uuid())
+  numeroFactura   Int           @default(autoincrement()) @unique @map("numero_factura")
+  pacienteId      String        @map("paciente_id")
+  estado          EstadoFactura @default(BORRADOR)
+  fechaEmision    DateTime?     @map("fecha_emision")
+  subtotal        Decimal       @default(0) @db.Decimal(14, 2)
+  descuento       Decimal       @default(0) @db.Decimal(14, 2)
+  total           Decimal       @default(0) @db.Decimal(14, 2)
+  emitidaPor      String        @map("emitida_por")
+  observaciones   String?
+  anuladaEn       DateTime?     @map("anulada_en")
+  anuladaPor      String?       @map("anulada_por")
+  motivoAnulacion String?       @map("motivo_anulacion")
+  creadoEn        DateTime      @default(now()) @map("creado_en")
+  modificadoEn    DateTime      @default(now()) @map("modificado_en")
+
+  paciente        Paciente      @relation(fields: [pacienteId], references: [id])
+  detalles        DetalleFactura[]
+  pagos           Pago[]
+
+  @@schema("facturacion")
+  @@map("factura")
+}
+
+model DetalleFactura {
+  id              String            @id @default(uuid())
+  facturaId       String            @map("factura_id")
+  prestacionId    String            @unique @map("prestacion_id")
+  descripcion     String            @db.VarChar(250)
+  cantidad        Decimal           @db.Decimal(12, 3)
+  precioUnitario  Decimal           @map("precio_unitario") @db.Decimal(12, 2)
+  descuento       Decimal           @default(0) @db.Decimal(12, 2)
+  creadoEn        DateTime          @default(now()) @map("creado_en")
+
+  factura         Factura           @relation(fields: [facturaId], references: [id], onDelete: Cascade)
+  prestacion      PrestacionServicio @relation(fields: [prestacionId], references: [id])
+
+  @@schema("facturacion")
+  @@map("detalle_factura")
+}
+
+model Pago {
+  id                String        @id @default(uuid())
+  facturaId         String        @map("factura_id")
+  fechaPago         DateTime      @default(now()) @map("fecha_pago")
+  monto             Decimal       @db.Decimal(14, 2)
+  metodo            MetodoPago
+  referencia        String?       @db.VarChar(120)
+  registradoPor     String        @map("registrado_por")
+  anulado           Boolean       @default(false)
+  anuladoEn         DateTime?     @map("anulado_en")
+  anuladoPor        String?       @map("anulado_por")
+  motivoAnulacion   String?       @map("motivo_anulacion")
+  creadoEn          DateTime      @default(now()) @map("creado_en")
+
+  factura           Factura       @relation(fields: [facturaId], references: [id])
+
+  @@schema("facturacion")
+  @@map("pago")
+}
+
+// ============================================================
+// AUDITORIA
+// ============================================================
+
+model Evento {
+  id                        BigInt    @id @default(autoincrement())
+  usuarioId                 String?   @map("usuario_id")
+  fechaHora                 DateTime  @default(now()) @map("fecha_hora")
+  direccionIp               String?   @map("direccion_ip") @db.Inet()
+  esquema                   String    @db.VarChar(63)
+  tabla                     String    @db.VarChar(63)
+  operacion                 String    @db.Char(1)
+  registroId                String?   @map("registro_id")
+  datosAnteriores           Json?     @map("datos_anteriores")
+  datosNuevos               Json?     @map("datos_nuevos")
+  identificadorTransaccion  BigInt    @default(0) @map("identificador_transaccion")
+
+  @@schema("auditoria")
+  @@map("evento")
 }
