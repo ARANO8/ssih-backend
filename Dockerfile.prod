@@ -1,6 +1,6 @@
 FROM node:22-alpine AS build
 WORKDIR /app
-COPY package.json pnpm-lock.yaml .npmrc ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 RUN corepack enable && pnpm install --frozen-lockfile --config.minimum-release-age=0
 COPY src/ src/
 COPY prisma/ prisma/
