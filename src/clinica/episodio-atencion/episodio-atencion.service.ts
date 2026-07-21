@@ -1,26 +1,44 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from 'nestjs-prisma';
 import { CreateEpisodioAtencionDto } from './dto/create-episodio-atencion.dto';
 import { UpdateEpisodioAtencionDto } from './dto/update-episodio-atencion.dto';
 
 @Injectable()
 export class EpisodioAtencionService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  private parseId(id: string): any {
+    if (!id) return id;
+    if (/[a-zA-Z\-]/.test(id)) return id;
+    return isNaN(Number(id)) ? id : Number(id);
+  }
+
   create(createEpisodioAtencionDto: CreateEpisodioAtencionDto) {
-    return 'This action adds a new episodioAtencion';
+    return (this.prisma as any).episodioAtencion.create({
+      data: createEpisodioAtencionDto as any,
+    });
   }
 
   findAll() {
-    return `This action returns all episodioAtencion`;
+    return (this.prisma as any).episodioAtencion.findMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} episodioAtencion`;
+  findOne(id: string) {
+    return (this.prisma as any).episodioAtencion.findUnique({
+      where: { id: this.parseId(id) },
+    });
   }
 
-  update(id: number, updateEpisodioAtencionDto: UpdateEpisodioAtencionDto) {
-    return `This action updates a #${id} episodioAtencion`;
+  update(id: string, updateEpisodioAtencionDto: UpdateEpisodioAtencionDto) {
+    return (this.prisma as any).episodioAtencion.update({
+      where: { id: this.parseId(id) },
+      data: updateEpisodioAtencionDto as any,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} episodioAtencion`;
+  remove(id: string) {
+    return (this.prisma as any).episodioAtencion.delete({
+      where: { id: this.parseId(id) },
+    });
   }
 }

@@ -1,26 +1,44 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from 'nestjs-prisma';
 import { CreateHistoriaClinicaDto } from './dto/create-historia-clinica.dto';
 import { UpdateHistoriaClinicaDto } from './dto/update-historia-clinica.dto';
 
 @Injectable()
 export class HistoriaClinicaService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  private parseId(id: string): any {
+    if (!id) return id;
+    if (/[a-zA-Z\-]/.test(id)) return id;
+    return isNaN(Number(id)) ? id : Number(id);
+  }
+
   create(createHistoriaClinicaDto: CreateHistoriaClinicaDto) {
-    return 'This action adds a new historiaClinica';
+    return (this.prisma as any).historiaClinica.create({
+      data: createHistoriaClinicaDto as any,
+    });
   }
 
   findAll() {
-    return `This action returns all historiaClinica`;
+    return (this.prisma as any).historiaClinica.findMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} historiaClinica`;
+  findOne(id: string) {
+    return (this.prisma as any).historiaClinica.findUnique({
+      where: { id: this.parseId(id) },
+    });
   }
 
-  update(id: number, updateHistoriaClinicaDto: UpdateHistoriaClinicaDto) {
-    return `This action updates a #${id} historiaClinica`;
+  update(id: string, updateHistoriaClinicaDto: UpdateHistoriaClinicaDto) {
+    return (this.prisma as any).historiaClinica.update({
+      where: { id: this.parseId(id) },
+      data: updateHistoriaClinicaDto as any,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} historiaClinica`;
+  remove(id: string) {
+    return (this.prisma as any).historiaClinica.delete({
+      where: { id: this.parseId(id) },
+    });
   }
 }

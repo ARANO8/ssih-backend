@@ -1,8 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { MuestraService } from './muestra.service';
 import { CreateMuestraDto } from './dto/create-muestra.dto';
 import { UpdateMuestraDto } from './dto/update-muestra.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Muestra')
 @Controller('muestra')
 export class MuestraController {
   constructor(private readonly muestraService: MuestraService) {}
@@ -19,16 +29,16 @@ export class MuestraController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.muestraService.findOne(+id);
+    return this.muestraService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateMuestraDto: UpdateMuestraDto) {
-    return this.muestraService.update(+id, updateMuestraDto);
+    return this.muestraService.update(id, updateMuestraDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.muestraService.remove(+id);
+    return this.muestraService.remove(id);
   }
 }

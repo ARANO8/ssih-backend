@@ -1,26 +1,44 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from 'nestjs-prisma';
 import { CreateRolDto } from './dto/create-rol.dto';
 import { UpdateRolDto } from './dto/update-rol.dto';
 
 @Injectable()
 export class RolService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  private parseId(id: string): any {
+    if (!id) return id;
+    if (/[a-zA-Z\-]/.test(id)) return id;
+    return isNaN(Number(id)) ? id : Number(id);
+  }
+
   create(createRolDto: CreateRolDto) {
-    return 'This action adds a new rol';
+    return (this.prisma as any).rol.create({
+      data: createRolDto as any,
+    });
   }
 
   findAll() {
-    return `This action returns all rol`;
+    return (this.prisma as any).rol.findMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} rol`;
+  findOne(id: string) {
+    return (this.prisma as any).rol.findUnique({
+      where: { id: this.parseId(id) },
+    });
   }
 
-  update(id: number, updateRolDto: UpdateRolDto) {
-    return `This action updates a #${id} rol`;
+  update(id: string, updateRolDto: UpdateRolDto) {
+    return (this.prisma as any).rol.update({
+      where: { id: this.parseId(id) },
+      data: updateRolDto as any,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} rol`;
+  remove(id: string) {
+    return (this.prisma as any).rol.delete({
+      where: { id: this.parseId(id) },
+    });
   }
 }

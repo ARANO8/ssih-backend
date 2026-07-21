@@ -1,8 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { CompraService } from './compra.service';
 import { CreateCompraDto } from './dto/create-compra.dto';
 import { UpdateCompraDto } from './dto/update-compra.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Compra')
 @Controller('compra')
 export class CompraController {
   constructor(private readonly compraService: CompraService) {}
@@ -19,16 +29,16 @@ export class CompraController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.compraService.findOne(+id);
+    return this.compraService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateCompraDto: UpdateCompraDto) {
-    return this.compraService.update(+id, updateCompraDto);
+    return this.compraService.update(id, updateCompraDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.compraService.remove(+id);
+    return this.compraService.remove(id);
   }
 }

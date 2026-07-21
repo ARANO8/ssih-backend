@@ -1,26 +1,44 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from 'nestjs-prisma';
 import { CreateConsultaDto } from './dto/create-consulta.dto';
 import { UpdateConsultaDto } from './dto/update-consulta.dto';
 
 @Injectable()
 export class ConsultaService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  private parseId(id: string): any {
+    if (!id) return id;
+    if (/[a-zA-Z\-]/.test(id)) return id;
+    return isNaN(Number(id)) ? id : Number(id);
+  }
+
   create(createConsultaDto: CreateConsultaDto) {
-    return 'This action adds a new consulta';
+    return (this.prisma as any).consulta.create({
+      data: createConsultaDto as any,
+    });
   }
 
   findAll() {
-    return `This action returns all consulta`;
+    return (this.prisma as any).consulta.findMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} consulta`;
+  findOne(id: string) {
+    return (this.prisma as any).consulta.findUnique({
+      where: { id: this.parseId(id) },
+    });
   }
 
-  update(id: number, updateConsultaDto: UpdateConsultaDto) {
-    return `This action updates a #${id} consulta`;
+  update(id: string, updateConsultaDto: UpdateConsultaDto) {
+    return (this.prisma as any).consulta.update({
+      where: { id: this.parseId(id) },
+      data: updateConsultaDto as any,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} consulta`;
+  remove(id: string) {
+    return (this.prisma as any).consulta.delete({
+      where: { id: this.parseId(id) },
+    });
   }
 }

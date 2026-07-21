@@ -1,8 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { PermisoService } from './permiso.service';
 import { CreatePermisoDto } from './dto/create-permiso.dto';
 import { UpdatePermisoDto } from './dto/update-permiso.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Permiso')
 @Controller('permiso')
 export class PermisoController {
   constructor(private readonly permisoService: PermisoService) {}
@@ -19,16 +29,16 @@ export class PermisoController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.permisoService.findOne(+id);
+    return this.permisoService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updatePermisoDto: UpdatePermisoDto) {
-    return this.permisoService.update(+id, updatePermisoDto);
+    return this.permisoService.update(id, updatePermisoDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.permisoService.remove(+id);
+    return this.permisoService.remove(id);
   }
 }

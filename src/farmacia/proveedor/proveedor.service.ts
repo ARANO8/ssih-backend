@@ -1,26 +1,44 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from 'nestjs-prisma';
 import { CreateProveedorDto } from './dto/create-proveedor.dto';
 import { UpdateProveedorDto } from './dto/update-proveedor.dto';
 
 @Injectable()
 export class ProveedorService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  private parseId(id: string): any {
+    if (!id) return id;
+    if (/[a-zA-Z\-]/.test(id)) return id;
+    return isNaN(Number(id)) ? id : Number(id);
+  }
+
   create(createProveedorDto: CreateProveedorDto) {
-    return 'This action adds a new proveedor';
+    return (this.prisma as any).proveedor.create({
+      data: createProveedorDto as any,
+    });
   }
 
   findAll() {
-    return `This action returns all proveedor`;
+    return (this.prisma as any).proveedor.findMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} proveedor`;
+  findOne(id: string) {
+    return (this.prisma as any).proveedor.findUnique({
+      where: { id: this.parseId(id) },
+    });
   }
 
-  update(id: number, updateProveedorDto: UpdateProveedorDto) {
-    return `This action updates a #${id} proveedor`;
+  update(id: string, updateProveedorDto: UpdateProveedorDto) {
+    return (this.prisma as any).proveedor.update({
+      where: { id: this.parseId(id) },
+      data: updateProveedorDto as any,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} proveedor`;
+  remove(id: string) {
+    return (this.prisma as any).proveedor.delete({
+      where: { id: this.parseId(id) },
+    });
   }
 }

@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'nestjs-prisma';
 import * as bcrypt from 'bcrypt';
@@ -26,23 +30,32 @@ export class AuthService {
   }
 
   async login(user: any) {
-    const payload = { 
-      sub: user.id, 
+    const payload = {
+      sub: user.id,
       nombreUsuario: user.nombreUsuario,
       personaId: user.personaId,
-      roles: user.usuarioRoles?.map((ur: any) => ur.rol.codigo) || []
+      roles: user.usuarioRoles?.map((ur: any) => ur.rol.codigo) || [],
     };
-    
+
     return {
       access_token: this.jwtService.sign(payload),
     };
   }
 
   async register(registerDto: RegisterDto) {
-    const { numeroDocumento, nombres, apellidos, correo, nombreUsuario, contrasena } = registerDto;
+    const {
+      numeroDocumento,
+      nombres,
+      apellidos,
+      correo,
+      nombreUsuario,
+      contrasena,
+    } = registerDto;
 
     // Check if user or person already exists
-    const existingUser = await this.prisma.usuario.findUnique({ where: { nombreUsuario } });
+    const existingUser = await this.prisma.usuario.findUnique({
+      where: { nombreUsuario },
+    });
     if (existingUser) {
       throw new ConflictException('El nombre de usuario ya está en uso');
     }

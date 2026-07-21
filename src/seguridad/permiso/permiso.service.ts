@@ -1,26 +1,44 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from 'nestjs-prisma';
 import { CreatePermisoDto } from './dto/create-permiso.dto';
 import { UpdatePermisoDto } from './dto/update-permiso.dto';
 
 @Injectable()
 export class PermisoService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  private parseId(id: string): any {
+    if (!id) return id;
+    if (/[a-zA-Z\-]/.test(id)) return id;
+    return isNaN(Number(id)) ? id : Number(id);
+  }
+
   create(createPermisoDto: CreatePermisoDto) {
-    return 'This action adds a new permiso';
+    return (this.prisma as any).permiso.create({
+      data: createPermisoDto as any,
+    });
   }
 
   findAll() {
-    return `This action returns all permiso`;
+    return (this.prisma as any).permiso.findMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} permiso`;
+  findOne(id: string) {
+    return (this.prisma as any).permiso.findUnique({
+      where: { id: this.parseId(id) },
+    });
   }
 
-  update(id: number, updatePermisoDto: UpdatePermisoDto) {
-    return `This action updates a #${id} permiso`;
+  update(id: string, updatePermisoDto: UpdatePermisoDto) {
+    return (this.prisma as any).permiso.update({
+      where: { id: this.parseId(id) },
+      data: updatePermisoDto as any,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} permiso`;
+  remove(id: string) {
+    return (this.prisma as any).permiso.delete({
+      where: { id: this.parseId(id) },
+    });
   }
 }

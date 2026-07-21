@@ -1,8 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { EspecialidadService } from './especialidad.service';
 import { CreateEspecialidadDto } from './dto/create-especialidad.dto';
 import { UpdateEspecialidadDto } from './dto/update-especialidad.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Especialidad')
 @Controller('especialidad')
 export class EspecialidadController {
   constructor(private readonly especialidadService: EspecialidadService) {}
@@ -19,16 +29,19 @@ export class EspecialidadController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.especialidadService.findOne(+id);
+    return this.especialidadService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateEspecialidadDto: UpdateEspecialidadDto) {
-    return this.especialidadService.update(+id, updateEspecialidadDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateEspecialidadDto: UpdateEspecialidadDto,
+  ) {
+    return this.especialidadService.update(id, updateEspecialidadDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.especialidadService.remove(+id);
+    return this.especialidadService.remove(id);
   }
 }

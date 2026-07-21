@@ -1,8 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { DispensacionService } from './dispensacion.service';
 import { CreateDispensacionDto } from './dto/create-dispensacion.dto';
 import { UpdateDispensacionDto } from './dto/update-dispensacion.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Dispensacion')
 @Controller('dispensacion')
 export class DispensacionController {
   constructor(private readonly dispensacionService: DispensacionService) {}
@@ -19,16 +29,19 @@ export class DispensacionController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.dispensacionService.findOne(+id);
+    return this.dispensacionService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateDispensacionDto: UpdateDispensacionDto) {
-    return this.dispensacionService.update(+id, updateDispensacionDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateDispensacionDto: UpdateDispensacionDto,
+  ) {
+    return this.dispensacionService.update(id, updateDispensacionDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.dispensacionService.remove(+id);
+    return this.dispensacionService.remove(id);
   }
 }

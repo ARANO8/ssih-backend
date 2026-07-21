@@ -1,26 +1,44 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from 'nestjs-prisma';
 import { CreateServicioDto } from './dto/create-servicio.dto';
 import { UpdateServicioDto } from './dto/update-servicio.dto';
 
 @Injectable()
 export class ServicioService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  private parseId(id: string): any {
+    if (!id) return id;
+    if (/[a-zA-Z\-]/.test(id)) return id;
+    return isNaN(Number(id)) ? id : Number(id);
+  }
+
   create(createServicioDto: CreateServicioDto) {
-    return 'This action adds a new servicio';
+    return (this.prisma as any).servicio.create({
+      data: createServicioDto as any,
+    });
   }
 
   findAll() {
-    return `This action returns all servicio`;
+    return (this.prisma as any).servicio.findMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} servicio`;
+  findOne(id: string) {
+    return (this.prisma as any).servicio.findUnique({
+      where: { id: this.parseId(id) },
+    });
   }
 
-  update(id: number, updateServicioDto: UpdateServicioDto) {
-    return `This action updates a #${id} servicio`;
+  update(id: string, updateServicioDto: UpdateServicioDto) {
+    return (this.prisma as any).servicio.update({
+      where: { id: this.parseId(id) },
+      data: updateServicioDto as any,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} servicio`;
+  remove(id: string) {
+    return (this.prisma as any).servicio.delete({
+      where: { id: this.parseId(id) },
+    });
   }
 }

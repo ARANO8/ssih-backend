@@ -1,8 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { CitaService } from './cita.service';
 import { CreateCitaDto } from './dto/create-cita.dto';
 import { UpdateCitaDto } from './dto/update-cita.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Cita')
 @Controller('cita')
 export class CitaController {
   constructor(private readonly citaService: CitaService) {}
@@ -19,16 +29,16 @@ export class CitaController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.citaService.findOne(+id);
+    return this.citaService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateCitaDto: UpdateCitaDto) {
-    return this.citaService.update(+id, updateCitaDto);
+    return this.citaService.update(id, updateCitaDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.citaService.remove(+id);
+    return this.citaService.remove(id);
   }
 }
