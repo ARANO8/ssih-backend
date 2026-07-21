@@ -7,6 +7,21 @@ import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 export class UsuarioService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private readonly safeSelect = {
+    id: true,
+    personaId: true,
+    nombreUsuario: true,
+    estado: true,
+    intentosFallidos: true,
+    bloqueadoHasta: true,
+    ultimoAccesoEn: true,
+    cambiarContrasena: true,
+    creadoEn: true,
+    modificadoEn: true,
+    persona: true,
+    usuarioRoles: { include: { rol: true } },
+  };
+
   private parseId(id: string): any {
     if (!id) return id;
     if (/[a-zA-Z\-]/.test(id)) return id;
@@ -20,12 +35,13 @@ export class UsuarioService {
   }
 
   findAll() {
-    return (this.prisma as any).usuario.findMany();
+    return (this.prisma as any).usuario.findMany({ select: this.safeSelect });
   }
 
   findOne(id: string) {
     return (this.prisma as any).usuario.findUnique({
       where: { id: this.parseId(id) },
+      select: this.safeSelect,
     });
   }
 
@@ -33,6 +49,7 @@ export class UsuarioService {
     return (this.prisma as any).usuario.update({
       where: { id: this.parseId(id) },
       data: updateUsuarioDto as any,
+      select: this.safeSelect,
     });
   }
 

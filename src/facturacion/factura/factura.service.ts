@@ -20,12 +20,16 @@ export class FacturaService {
   }
 
   findAll() {
-    return (this.prisma as any).factura.findMany();
+    return (this.prisma as any).factura.findMany({
+      include: { paciente: { include: { persona: true } }, pagos: true },
+      orderBy: { creadoEn: 'desc' },
+    });
   }
 
   findOne(id: string) {
     return (this.prisma as any).factura.findUnique({
       where: { id: this.parseId(id) },
+      include: { paciente: { include: { persona: true } }, pagos: true, detalles: true },
     });
   }
 

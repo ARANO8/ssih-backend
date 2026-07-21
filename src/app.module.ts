@@ -30,6 +30,8 @@ import { ServicioModule } from './facturacion/servicio/servicio.module';
 import { FacturaModule } from './facturacion/factura/factura.module';
 import { PagoModule } from './facturacion/pago/pago.module';
 import { AlmacenamientoModule } from './almacenamiento/almacenamiento.module';
+import { HorarioMedicoModule } from './maestros/horario-medico/horario-medico.module';
+import { AlertaModule } from './seguridad/alerta/alerta.module';
 
 @Module({
   imports: [
@@ -72,6 +74,8 @@ import { AlmacenamientoModule } from './almacenamiento/almacenamiento.module';
     FacturaModule,
     PagoModule,
     AlmacenamientoModule,
+    HorarioMedicoModule,
+    AlertaModule,
   ],
   controllers: [],
   providers: [],

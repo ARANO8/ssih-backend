@@ -1,4 +1,23 @@
 services:
+  backend:
+    build: .
+    container_name: ssih-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://admin:root@postgres:5432/siih_hospital
+      JWT_SECRET: ${JWT_SECRET:-super_secret_key_change_me}
+      S3_REGION: ${S3_REGION:-us-east-1}
+      S3_ENDPOINT: http://minio:9000
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-minioadmin}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-minioadmin}
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME:-ssih-hospital-files}
+      S3_FORCE_PATH_STYLE: "true"
+    depends_on:
+      - postgres
+      - minio
+
   postgres:
     image: postgres:16-alpine
     container_name: ssih-postgres

@@ -20,12 +20,16 @@ export class OrdenImagenologiaService {
   }
 
   findAll() {
-    return (this.prisma as any).ordenImagenologia.findMany();
+    return (this.prisma as any).ordenImagenologia.findMany({
+      include: { consulta: true, medico: true },
+      orderBy: { solicitadoEn: 'desc' },
+    });
   }
 
   findOne(id: string) {
     return (this.prisma as any).ordenImagenologia.findUnique({
       where: { id: this.parseId(id) },
+      include: { consulta: true, medico: true },
     });
   }
 

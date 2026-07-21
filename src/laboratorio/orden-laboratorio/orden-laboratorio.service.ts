@@ -20,12 +20,16 @@ export class OrdenLaboratorioService {
   }
 
   findAll() {
-    return (this.prisma as any).ordenLaboratorio.findMany();
+    return (this.prisma as any).ordenLaboratorio.findMany({
+      include: { consulta: true, medico: true },
+      orderBy: { solicitadoEn: 'desc' },
+    });
   }
 
   findOne(id: string) {
     return (this.prisma as any).ordenLaboratorio.findUnique({
       where: { id: this.parseId(id) },
+      include: { consulta: true, medico: true },
     });
   }
 

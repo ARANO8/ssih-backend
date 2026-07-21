@@ -20,12 +20,13 @@ export class EmpleadoService {
   }
 
   findAll() {
-    return (this.prisma as any).empleado.findMany();
+    return (this.prisma as any).empleado.findMany({ include: { persona: true, medico: true } });
   }
 
   findOne(id: string) {
     return (this.prisma as any).empleado.findUnique({
       where: { id: this.parseId(id) },
+      include: { persona: true, medico: true },
     });
   }
 
