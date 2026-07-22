@@ -1,0 +1,23 @@
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+ALTER TABLE laboratorio.orden_laboratorio
+  ADD COLUMN IF NOT EXISTS prioridad TEXT NOT NULL DEFAULT 'NORMAL',
+  ADD COLUMN IF NOT EXISTS estado TEXT NOT NULL DEFAULT 'PENDIENTE';
+
+ALTER TABLE imagenologia.orden_imagenologia
+  ADD COLUMN IF NOT EXISTS prioridad TEXT NOT NULL DEFAULT 'NORMAL',
+  ADD COLUMN IF NOT EXISTS estado TEXT NOT NULL DEFAULT 'PENDIENTE';
+
+CREATE TABLE IF NOT EXISTS seguridad.alerta (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  titulo VARCHAR(160) NOT NULL,
+  mensaje TEXT NOT NULL,
+  severidad VARCHAR(20) NOT NULL DEFAULT 'INFO',
+  estado VARCHAR(20) NOT NULL DEFAULT 'ACTIVA',
+  origen VARCHAR(60) NOT NULL DEFAULT 'SISTEMA',
+  creado_en TIMESTAMP NOT NULL DEFAULT NOW(),
+  resuelto_en TIMESTAMP NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_alerta_estado ON seguridad.alerta (estado);
+CREATE INDEX IF NOT EXISTS idx_alerta_creado_en ON seguridad.alerta (creado_en DESC);

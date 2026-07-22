@@ -20,12 +20,16 @@ export class EpisodioAtencionService {
   }
 
   findAll() {
-    return (this.prisma as any).episodioAtencion.findMany();
+    return (this.prisma as any).episodioAtencion.findMany({
+      include: { paciente: { include: { persona: true } } },
+      orderBy: { fechaInicio: 'desc' },
+    });
   }
 
   findOne(id: string) {
     return (this.prisma as any).episodioAtencion.findUnique({
       where: { id: this.parseId(id) },
+      include: { paciente: { include: { persona: true } }, consultas: true },
     });
   }
 

@@ -3,6 +3,7 @@ allowBuilds:
   bcrypt: true
   "@prisma/engines": true
   prisma: true
+  unrs-resolver: true
 strictDepBuilds: false
 verifyDepsBeforeRun: false
 trustLockfile: true

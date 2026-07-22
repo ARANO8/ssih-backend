@@ -20,7 +20,7 @@ export class MedicoService {
   }
 
   findAll() {
-    return (this.prisma as any).medico.findMany();
+    return (this.prisma as any).medico.findMany({ include: { empleado: { include: { persona: true } } } });
   }
 
   findOne(id: string) {

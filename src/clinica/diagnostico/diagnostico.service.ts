@@ -14,30 +14,30 @@ export class DiagnosticoService {
   }
 
   create(createDiagnosticoDto: CreateDiagnosticoDto) {
-    return (this.prisma as any).diagnostico.create({
+    return (this.prisma as any).catalogoDiagnostico.create({
       data: createDiagnosticoDto as any,
     });
   }
 
   findAll() {
-    return (this.prisma as any).diagnostico.findMany();
+    return (this.prisma as any).catalogoDiagnostico.findMany();
   }
 
   findOne(id: string) {
-    return (this.prisma as any).diagnostico.findUnique({
+    return (this.prisma as any).catalogoDiagnostico.findUnique({
       where: { id: this.parseId(id) },
     });
   }
 
   update(id: string, updateDiagnosticoDto: UpdateDiagnosticoDto) {
-    return (this.prisma as any).diagnostico.update({
+    return (this.prisma as any).catalogoDiagnostico.update({
       where: { id: this.parseId(id) },
       data: updateDiagnosticoDto as any,
     });
   }
 
   remove(id: string) {
-    return (this.prisma as any).diagnostico.delete({
+    return (this.prisma as any).catalogoDiagnostico.delete({
       where: { id: this.parseId(id) },
     });
   }

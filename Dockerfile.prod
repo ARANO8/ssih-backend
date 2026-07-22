@@ -4,6 +4,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 RUN corepack enable && pnpm install --frozen-lockfile --config.minimum-release-age=0
 COPY src/ src/
 COPY prisma/ prisma/
+COPY scripts/ scripts/
 COPY prisma.config.ts tsconfig.json tsconfig.build.json nest-cli.json ./
 RUN npx prisma generate && pnpm run build
 
@@ -12,7 +13,8 @@ WORKDIR /app
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/prisma ./prisma
+COPY --from=build /app/scripts ./scripts
 COPY --from=build /app/prisma.config.ts ./prisma.config.ts
 COPY --from=build /app/package.json ./
 EXPOSE 3000
-CMD npx prisma migrate deploy 2>&1 && node dist/src/main
+CMD npx prisma migrate deploy 2>&1 && node scripts/bootstrap-database.js && node dist/src/main

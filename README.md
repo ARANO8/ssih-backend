@@ -20,6 +20,37 @@
 
 Backend API del proyecto SSIH construido con [NestJS](https://github.com/nestjs/nest), [Prisma](https://www.prisma.io/) y [PostgreSQL](https://www.postgresql.org/).
 
+## Inicio completo con Docker
+
+Para levantar PostgreSQL, MinIO y el backend desde una instalacion limpia:
+
+```bash
+docker compose up -d --build
+```
+
+No es necesario ejecutar Prisma ni scripts SQL manualmente. Al iniciar, el contenedor espera a PostgreSQL, aplica todas las migraciones pendientes con `prisma migrate deploy`, carga una sola vez los roles, usuarios y alertas de demostracion, y finalmente inicia la API.
+
+- API: `http://localhost:3000/ssih/api`
+- Swagger: `http://localhost:3000/ssih/api/docs`
+- PostgreSQL: `localhost:55432`
+- MinIO: `http://localhost:9001`
+
+Todas las cuentas demo usan la contrasena `SIIH2026!`:
+
+| Rol | Usuario |
+| --- | --- |
+| Administrador | `admin` |
+| Recepcionista | `recepcion.demo` |
+| Medico | `medico.demo` |
+| Enfermeria | `enfermeria.demo` |
+| Laboratorio | `laboratorio.demo` |
+| Farmacia | `farmacia.demo` |
+| Caja | `caja.demo` |
+| Director | `director.demo` |
+| Paciente | `paciente.demo` |
+
+El bootstrap es idempotente: reiniciar los contenedores no duplica la informacion. Las contrasenas incluidas son solo para demostracion y deben cambiarse en un entorno real.
+
 ## Requisitos previos
 
 - [Node.js](https://nodejs.org/) v18+

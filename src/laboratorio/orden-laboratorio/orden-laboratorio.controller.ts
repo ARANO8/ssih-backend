@@ -34,6 +34,14 @@ export class OrdenLaboratorioController {
     return this.ordenLaboratorioService.findOne(id);
   }
 
+  @Post(':id/resultados')
+  registrarResultado(
+    @Param('id') id: string,
+    @Body() data: Record<string, unknown>,
+  ) {
+    return this.ordenLaboratorioService.registrarResultado(id, data);
+  }
+
   @Patch(':id')
   update(
     @Param('id') id: string,
