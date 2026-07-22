@@ -24,7 +24,9 @@ export class OrdenLaboratorioService {
       include: {
         consulta: true,
         medico: true,
-        detalles: { include: { tipoExamen: true, muestra: true, resultado: true } },
+        detalles: {
+          include: { tipoExamen: true, muestra: true, resultado: true },
+        },
       },
       orderBy: { solicitadoEn: 'desc' },
     });
@@ -36,13 +38,19 @@ export class OrdenLaboratorioService {
       include: {
         consulta: true,
         medico: true,
-        detalles: { include: { tipoExamen: true, muestra: true, resultado: true } },
+        detalles: {
+          include: { tipoExamen: true, muestra: true, resultado: true },
+        },
       },
     });
   }
 
   async registrarResultado(ordenId: string, data: Record<string, any>) {
-    if (!data.tipoExamenCodigo || !data.tipoExamenNombre || !data.registradoPor) {
+    if (
+      !data.tipoExamenCodigo ||
+      !data.tipoExamenNombre ||
+      !data.registradoPor
+    ) {
       throw new BadRequestException(
         'tipoExamenCodigo, tipoExamenNombre y registradoPor son obligatorios',
       );
@@ -69,7 +77,9 @@ export class OrdenLaboratorioService {
         where: {
           ordenId_tipoExamenId: { ordenId, tipoExamenId: tipoExamen.id },
         },
-        update: { estado: data.estado === 'VALIDADO' ? 'VALIDADA' : 'COMPLETADA' },
+        update: {
+          estado: data.estado === 'VALIDADO' ? 'VALIDADA' : 'COMPLETADA',
+        },
         create: {
           ordenId,
           tipoExamenId: tipoExamen.id,
@@ -87,7 +97,8 @@ export class OrdenLaboratorioService {
           rangoReferencia: data.rangoReferencia,
           esAnormal: data.esAnormal,
           observaciones: data.observaciones,
-          validadoPor: data.estado === 'VALIDADO' ? data.registradoPor : undefined,
+          validadoPor:
+            data.estado === 'VALIDADO' ? data.registradoPor : undefined,
           validadoEn: data.estado === 'VALIDADO' ? new Date() : undefined,
         },
         create: {
@@ -100,17 +111,22 @@ export class OrdenLaboratorioService {
           esAnormal: data.esAnormal,
           observaciones: data.observaciones,
           registradoPor: data.registradoPor,
-          validadoPor: data.estado === 'VALIDADO' ? data.registradoPor : undefined,
+          validadoPor:
+            data.estado === 'VALIDADO' ? data.registradoPor : undefined,
           validadoEn: data.estado === 'VALIDADO' ? new Date() : undefined,
         },
       });
       await tx.ordenLaboratorio.update({
         where: { id: ordenId },
-        data: { estado: data.estado === 'VALIDADO' ? 'VALIDADA' : 'COMPLETADA' },
+        data: {
+          estado: data.estado === 'VALIDADO' ? 'VALIDADA' : 'COMPLETADA',
+        },
       });
       return tx.resultadoLab.findUnique({
         where: { id: resultado.id },
-        include: { detalleOrden: { include: { tipoExamen: true, orden: true } } },
+        include: {
+          detalleOrden: { include: { tipoExamen: true, orden: true } },
+        },
       });
     });
   }

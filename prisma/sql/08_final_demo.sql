@@ -46,6 +46,17 @@ SELECT u.id, r.id FROM seguridad.usuario u JOIN seguridad.rol r ON r.codigo = CA
 WHERE u.nombre_usuario IN ('admin','recepcion.demo','medico.demo','enfermeria.demo','laboratorio.demo','farmacia.demo','caja.demo','director.demo','paciente.demo')
 ON CONFLICT DO NOTHING;
 
+CREATE TABLE IF NOT EXISTS seguridad.alerta (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  titulo VARCHAR(160) NOT NULL,
+  mensaje TEXT NOT NULL,
+  severidad VARCHAR(20) NOT NULL DEFAULT 'INFO',
+  estado VARCHAR(20) NOT NULL DEFAULT 'ACTIVA',
+  origen VARCHAR(60) NOT NULL DEFAULT 'SISTEMA',
+  creado_en TIMESTAMP NOT NULL DEFAULT NOW(),
+  resuelto_en TIMESTAMP NULL
+);
+
 INSERT INTO seguridad.alerta (id, titulo, mensaje, severidad, estado, origen) VALUES
 ('61000000-0000-0000-0000-000000000001', 'Revisar inventario de farmacia', 'Existen medicamentos con stock minimo que requieren revision.', 'ADVERTENCIA', 'ACTIVA', 'FARMACIA'),
 ('61000000-0000-0000-0000-000000000002', 'Ordenes pendientes', 'Verificar las ordenes diagnosticas pendientes.', 'INFO', 'ACTIVA', 'SERVICIOS'),

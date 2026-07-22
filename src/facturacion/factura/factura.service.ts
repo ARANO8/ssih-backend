@@ -29,7 +29,11 @@ export class FacturaService {
   findOne(id: string) {
     return (this.prisma as any).factura.findUnique({
       where: { id: this.parseId(id) },
-      include: { paciente: { include: { persona: true } }, pagos: true, detalles: true },
+      include: {
+        paciente: { include: { persona: true } },
+        pagos: true,
+        detalles: true,
+      },
     });
   }
 

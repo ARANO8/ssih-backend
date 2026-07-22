@@ -691,38 +691,11 @@ async function main() {
   // ═══════════════════════════════════════════════════════════
 
   console.log('  Creating alertas...');
-  await p.$executeRawUnsafe(`
-    CREATE TABLE IF NOT EXISTS seguridad.alerta (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      titulo VARCHAR(160) NOT NULL,
-      mensaje TEXT NOT NULL,
-      severidad VARCHAR(20) NOT NULL DEFAULT 'INFO',
-      estado VARCHAR(20) NOT NULL DEFAULT 'ACTIVA',
-      origen VARCHAR(60) NOT NULL DEFAULT 'SISTEMA',
-      creado_en TIMESTAMP NOT NULL DEFAULT NOW(),
-      resuelto_en TIMESTAMP NULL
-    )
-  `);
-  await p.$executeRawUnsafe(
-    `INSERT INTO seguridad.alerta (titulo, mensaje, severidad, estado, origen) VALUES ($1, $2, $3, $4, $5)`,
-    'Bienvenida', 'Sistema SIIH iniciado correctamente', 'INFO', 'ACTIVA', 'SISTEMA',
-  );
-  await p.$executeRawUnsafe(
-    `INSERT INTO seguridad.alerta (titulo, mensaje, severidad, estado, origen) VALUES ($1, $2, $3, $4, $5)`,
-    'Stock bajo', 'Paracetamol stock por debajo del mínimo', 'ADVERTENCIA', 'ACTIVA', 'FARMACIA',
-  );
-  await p.$executeRawUnsafe(
-    `INSERT INTO seguridad.alerta (titulo, mensaje, severidad, estado, origen) VALUES ($1, $2, $3, $4, $5)`,
-    'Resultado pendiente', 'Examen HbA1c del paciente María Condori está pendiente de validación', 'INFO', 'ACTIVA', 'LABORATORIO',
-  );
-  await p.$executeRawUnsafe(
-    `INSERT INTO seguridad.alerta (titulo, mensaje, severidad, estado, origen) VALUES ($1, $2, $3, $4, $5)`,
-    'Mantenimiento programado', 'El sistema será actualizado este fin de semana', 'INFO', 'ACTIVA', 'SISTEMA',
-  );
-  await p.$executeRawUnsafe(
-    `INSERT INTO seguridad.alerta (titulo, mensaje, severidad, estado, origen) VALUES ($1, $2, $3, $4, $5)`,
-    'Factura vencida', 'La factura #3 del paciente Juan Pablo Mamani lleva 14 días sin pagar', 'CRITICA', 'ACTIVA', 'FACTURACION',
-  );
+  await p.alerta.create({ data: { titulo: 'Bienvenida', mensaje: 'Sistema SIIH iniciado correctamente', severidad: 'INFO', estado: 'ACTIVA', origen: 'SISTEMA' } });
+  await p.alerta.create({ data: { titulo: 'Stock bajo', mensaje: 'Paracetamol stock por debajo del mínimo', severidad: 'ADVERTENCIA', estado: 'ACTIVA', origen: 'FARMACIA' } });
+  await p.alerta.create({ data: { titulo: 'Resultado pendiente', mensaje: 'Examen HbA1c del paciente María Condori está pendiente de validación', severidad: 'INFO', estado: 'ACTIVA', origen: 'LABORATORIO' } });
+  await p.alerta.create({ data: { titulo: 'Mantenimiento programado', mensaje: 'El sistema será actualizado este fin de semana', severidad: 'INFO', estado: 'ACTIVA', origen: 'SISTEMA' } });
+  await p.alerta.create({ data: { titulo: 'Factura vencida', mensaje: 'La factura #3 del paciente Juan Pablo Mamani lleva 14 días sin pagar', severidad: 'CRITICA', estado: 'ACTIVA', origen: 'FACTURACION' } });
 
   // ═══════════════════════════════════════════════════════════
   // RESUMEN
@@ -770,7 +743,7 @@ async function main() {
     facturas: await p.factura.count(),
     detalleFacturas: await p.detalleFactura.count(),
     pagos: await p.pago.count(),
-    alertas: ((await p.$queryRawUnsafe(`SELECT COUNT(*)::int AS cnt FROM seguridad.alerta`)) as any[])[0]?.cnt ?? 0,
+    alertas: await p.alerta.count(),
   };
 
   console.log('\n  ═══ SEED COMPLETE ═══');
