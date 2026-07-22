@@ -1,4 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { HorarioMedicoService } from './horario-medico.service';
 
@@ -6,9 +14,22 @@ import { HorarioMedicoService } from './horario-medico.service';
 @Controller('horario-medico')
 export class HorarioMedicoController {
   constructor(private readonly service: HorarioMedicoService) {}
-  @Post() create(@Body() data: Record<string, unknown>) { return this.service.create(data); }
-  @Get() findAll() { return this.service.findAll(); }
-  @Get(':id') findOne(@Param('id') id: string) { return this.service.findOne(id); }
-  @Patch(':id') update(@Param('id') id: string, @Body() data: Record<string, unknown>) { return this.service.update(id, data); }
-  @Delete(':id') remove(@Param('id') id: string) { return this.service.remove(id); }
+  @Post() create(@Body() data: Record<string, unknown>) {
+    return this.service.create(data);
+  }
+  @Get() findAll() {
+    return this.service.findAll();
+  }
+  @Get(':id') findOne(@Param('id') id: string) {
+    return this.service.findOne(id);
+  }
+  @Patch(':id') update(
+    @Param('id') id: string,
+    @Body() data: Record<string, unknown>,
+  ) {
+    return this.service.update(id, data);
+  }
+  @Delete(':id') remove(@Param('id') id: string) {
+    return this.service.remove(id);
+  }
 }

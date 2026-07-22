@@ -42,7 +42,12 @@ export class OrdenImagenologiaService {
   }
 
   async registrarResultado(ordenId: string, data: Record<string, any>) {
-    if (!data.tipoEstudioCodigo || !data.tipoEstudioNombre || !data.informe || !data.registradoPor) {
+    if (
+      !data.tipoEstudioCodigo ||
+      !data.tipoEstudioNombre ||
+      !data.informe ||
+      !data.registradoPor
+    ) {
       throw new BadRequestException(
         'tipoEstudioCodigo, tipoEstudioNombre, informe y registradoPor son obligatorios',
       );
@@ -51,7 +56,10 @@ export class OrdenImagenologiaService {
     return (this.prisma as any).$transaction(async (tx: any) => {
       const tipoEstudio = await tx.tipoEstudio.upsert({
         where: { codigo: data.tipoEstudioCodigo },
-        update: { nombre: data.tipoEstudioNombre, descripcion: data.tipoEstudioDescripcion },
+        update: {
+          nombre: data.tipoEstudioNombre,
+          descripcion: data.tipoEstudioDescripcion,
+        },
         create: {
           codigo: data.tipoEstudioCodigo,
           nombre: data.tipoEstudioNombre,
@@ -59,12 +67,18 @@ export class OrdenImagenologiaService {
         },
       });
       let detalle = await tx.detalleOrdenImg.findFirst({
-        where: { ordenId, tipoEstudioId: tipoEstudio.id, regionAnatomica: data.regionAnatomica ?? null },
+        where: {
+          ordenId,
+          tipoEstudioId: tipoEstudio.id,
+          regionAnatomica: data.regionAnatomica ?? null,
+        },
       });
       if (detalle) {
         detalle = await tx.detalleOrdenImg.update({
           where: { id: detalle.id },
-          data: { estado: data.estado === 'VALIDADO' ? 'VALIDADA' : 'COMPLETADA' },
+          data: {
+            estado: data.estado === 'VALIDADO' ? 'VALIDADA' : 'COMPLETADA',
+          },
         });
       } else {
         detalle = await tx.detalleOrdenImg.create({
@@ -83,7 +97,8 @@ export class OrdenImagenologiaService {
           estado: data.estado ?? 'VALIDADO',
           informe: data.informe,
           conclusion: data.conclusion,
-          validadoPor: data.estado === 'VALIDADO' ? data.registradoPor : undefined,
+          validadoPor:
+            data.estado === 'VALIDADO' ? data.registradoPor : undefined,
           validadoEn: data.estado === 'VALIDADO' ? new Date() : undefined,
         },
         create: {
@@ -92,17 +107,22 @@ export class OrdenImagenologiaService {
           informe: data.informe,
           conclusion: data.conclusion,
           registradoPor: data.registradoPor,
-          validadoPor: data.estado === 'VALIDADO' ? data.registradoPor : undefined,
+          validadoPor:
+            data.estado === 'VALIDADO' ? data.registradoPor : undefined,
           validadoEn: data.estado === 'VALIDADO' ? new Date() : undefined,
         },
       });
       await tx.ordenImagenologia.update({
         where: { id: ordenId },
-        data: { estado: data.estado === 'VALIDADO' ? 'VALIDADA' : 'COMPLETADA' },
+        data: {
+          estado: data.estado === 'VALIDADO' ? 'VALIDADA' : 'COMPLETADA',
+        },
       });
       return tx.resultadoImg.findUnique({
         where: { id: resultado.id },
-        include: { detalleOrden: { include: { tipoEstudio: true, orden: true } } },
+        include: {
+          detalleOrden: { include: { tipoEstudio: true, orden: true } },
+        },
       });
     });
   }

@@ -1265,3 +1265,21 @@ model Evento {
   @@schema("auditoria")
   @@map("evento")
 }
+
+// ============================================================
+// SEGURIDAD - Alerta
+// ============================================================
+
+model Alerta {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  titulo     String    @db.VarChar(160)
+  mensaje    String    @db.Text
+  severidad  String    @default("INFO") @db.VarChar(20)
+  estado     String    @default("ACTIVA") @db.VarChar(20)
+  origen     String    @default("SISTEMA") @db.VarChar(60)
+  creadoEn   DateTime  @default(now()) @map("creado_en")
+  resueltoEn DateTime? @map("resuelto_en")
+
+  @@map("alerta")
+  @@schema("seguridad")
+}

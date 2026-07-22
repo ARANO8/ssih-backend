@@ -22,7 +22,10 @@ export class HorarioMedicoService {
   findOne(id: string) {
     return (this.prisma as any).horarioMedico.findUnique({
       where: { id },
-      include: { medico: { include: { empleado: { include: { persona: true } } } }, consultorio: true },
+      include: {
+        medico: { include: { empleado: { include: { persona: true } } } },
+        consultorio: true,
+      },
     });
   }
 

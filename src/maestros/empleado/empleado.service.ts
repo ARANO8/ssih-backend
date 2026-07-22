@@ -20,7 +20,9 @@ export class EmpleadoService {
   }
 
   findAll() {
-    return (this.prisma as any).empleado.findMany({ include: { persona: true, medico: true } });
+    return (this.prisma as any).empleado.findMany({
+      include: { persona: true, medico: true },
+    });
   }
 
   findOne(id: string) {
